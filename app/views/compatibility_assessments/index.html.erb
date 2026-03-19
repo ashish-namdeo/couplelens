@@ -1,0 +1,66 @@
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="page-header mb-0">
+      <h1>💕 Compatibility <span class="gradient-text">Assessments</span></h1>
+      <p>Deep-dive evaluations of your relationship compatibility</p>
+    </div>
+    <%= link_to new_compatibility_assessment_path, class: 'btn btn-gradient' do %>
+      <span><i class="bi bi-plus-lg me-1"></i> New Assessment</span>
+    <% end %>
+  </div>
+
+  <% if @assessments.any? %>
+    <div class="row g-4">
+      <% @assessments.each do |assessment| %>
+        <div class="col-md-6 animate-fade-in-up">
+          <div class="glass-card p-4 h-100">
+            <div class="d-flex justify-content-between align-items-start mb-3">
+              <div>
+                <h5 class="fw-bold mb-1">Assessment with <%= assessment.partner_name %></h5>
+                <small class="text-muted"><%= assessment.created_at.strftime('%B %d, %Y') %></small>
+              </div>
+              <div class="score-circle" style="width: 60px; height: 60px; font-size: 1.1rem; border-width: 2px;"
+                   class="<%= assessment.overall_score.to_f >= 70 ? 'score-high' : (assessment.overall_score.to_f >= 40 ? 'score-medium' : 'score-low') %>">
+                <%= assessment.overall_score&.round(0) %>%
+              </div>
+            </div>
+
+            <div class="mb-3">
+              <div class="d-flex justify-content-between small mb-1">
+                <span>Financial</span><span><%= assessment.financial_score&.round(1) %>%</span>
+              </div>
+              <div class="progress mb-2" style="height: 4px;">
+                <div class="progress-bar" style="width: <%= assessment.financial_score %>%"></div>
+              </div>
+              <div class="d-flex justify-content-between small mb-1">
+                <span>Lifestyle</span><span><%= assessment.lifestyle_score&.round(1) %>%</span>
+              </div>
+              <div class="progress mb-2" style="height: 4px;">
+                <div class="progress-bar" style="width: <%= assessment.lifestyle_score %>%"></div>
+              </div>
+              <div class="d-flex justify-content-between small mb-1">
+                <span>Parenting</span><span><%= assessment.parenting_score&.round(1) %>%</span>
+              </div>
+              <div class="progress" style="height: 4px;">
+                <div class="progress-bar" style="width: <%= assessment.parenting_score %>%"></div>
+              </div>
+            </div>
+
+            <%= link_to 'View Full Report', assessment, class: 'btn btn-sm btn-outline-glass w-100' %>
+          </div>
+        </div>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="glass-card-static p-5">
+      <div class="empty-state">
+        <div class="empty-icon">💕</div>
+        <h3>No assessments yet</h3>
+        <p>Take your first compatibility assessment to understand your relationship strengths and growth areas.</p>
+        <%= link_to new_compatibility_assessment_path, class: 'btn btn-gradient mt-3' do %>
+          <span>Start Assessment</span>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>

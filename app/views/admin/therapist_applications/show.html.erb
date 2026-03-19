@@ -1,0 +1,30 @@
+<div class="container py-4" style="max-width: 700px;">
+  <%= link_to admin_therapist_applications_path, class: 'btn btn-sm btn-outline-glass mb-3' do %>
+    <i class="bi bi-arrow-left me-1"></i> Back
+  <% end %>
+
+  <div class="glass-card-static p-4 mb-4">
+    <h3 class="fw-bold mb-3"><%= @application.full_name %></h3>
+    <div class="row g-3 mb-3">
+      <div class="col-6"><strong>Email:</strong> <%= @application.email %></div>
+      <div class="col-6"><strong>Specialization:</strong> <%= @application.specialization %></div>
+      <div class="col-6"><strong>Experience:</strong> <%= @application.years_experience %> years</div>
+      <div class="col-6"><strong>Rate:</strong> $<%= @application.hourly_rate&.round(0) %>/hr</div>
+    </div>
+    <h5 class="fw-bold mt-3">Bio</h5>
+    <p class="text-muted"><%= @application.bio %></p>
+    <h5 class="fw-bold">Certifications</h5>
+    <p class="text-muted"><%= @application.certifications %></p>
+  </div>
+
+  <% if @application.submitted? %>
+    <div class="d-flex gap-3">
+      <%= link_to approve_admin_therapist_application_path(@application), method: :post, data: { confirm: 'Approve?' }, class: 'btn btn-success btn-lg' do %>
+        <i class="bi bi-check-lg me-1"></i> Approve
+      <% end %>
+      <%= link_to reject_admin_therapist_application_path(@application), method: :post, data: { confirm: 'Reject?' }, class: 'btn btn-danger btn-lg' do %>
+        <i class="bi bi-x-lg me-1"></i> Reject
+      <% end %>
+    </div>
+  <% end %>
+</div>

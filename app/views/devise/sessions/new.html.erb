@@ -1,0 +1,41 @@
+<div class="devise-form animate-fade-in">
+  <div class="text-center mb-4">
+    <h2 class="fw-bold">Welcome to <span class="gradient-text">CoupleLens</span></h2>
+    <p class="text-muted">Sign in to your account</p>
+  </div>
+
+  <div class="glass-card-static">
+    <div class="p-4">
+      <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
+        <div class="mb-3">
+          <%= f.label :email, class: 'form-label' %>
+          <%= f.email_field :email, autofocus: true, autocomplete: "email", class: 'form-control', placeholder: 'your@email.com' %>
+        </div>
+
+        <div class="mb-3">
+          <%= f.label :password, class: 'form-label' %>
+          <%= f.password_field :password, autocomplete: "current-password", class: 'form-control', placeholder: '••••••••' %>
+        </div>
+
+        <% if devise_mapping.rememberable? %>
+          <div class="mb-3 form-check">
+            <%= f.check_box :remember_me, class: 'form-check-input' %>
+            <%= f.label :remember_me, class: 'form-check-label' %>
+          </div>
+        <% end %>
+
+        <div class="mb-3">
+          <%= f.submit "Sign In", class: 'btn btn-gradient w-100 btn-lg' %>
+        </div>
+      <% end %>
+
+      <div class="text-center mt-3">
+        <p class="text-muted small mb-1">
+          Don't have an account?
+          <%= link_to "Sign up", new_registration_path(resource_name), class: 'text-decoration-none gradient-text' %>
+        </p>
+        <%= link_to "Forgot password?", new_password_path(resource_name), class: 'text-muted small text-decoration-none' %>
+      </div>
+    </div>
+  </div>
+</div>

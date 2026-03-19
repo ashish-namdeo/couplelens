@@ -1,0 +1,56 @@
+<div class="container py-4">
+  <div class="page-header">
+    <h1>✨ Start New <span class="gradient-text">Conversation</span></h1>
+    <p>Choose your AI companion persona</p>
+  </div>
+
+  <%= form_with(model: @conversation, class: 'animate-fade-in') do |f| %>
+    <div class="glass-card-static p-4 mb-4">
+      <div class="mb-4">
+        <%= f.label :title, 'Conversation Topic', class: 'form-label' %>
+        <%= f.text_field :title, class: 'form-control', placeholder: 'e.g., Communication challenges with my partner' %>
+      </div>
+
+      <label class="form-label">Select AI Persona</label>
+      <div class="row g-3 mb-4">
+        <div class="col-md-3 col-6">
+          <label class="persona-card d-block">
+            <%= f.radio_button :persona, 'clinical_psychologist', class: 'd-none' %>
+            <div class="persona-emoji">🧠</div>
+            <h5>Clinical Psychologist</h5>
+            <p>Evidence-based insights & attachment theory</p>
+          </label>
+        </div>
+        <div class="col-md-3 col-6">
+          <label class="persona-card d-block">
+            <%= f.radio_button :persona, 'empathetic_listener', checked: true, class: 'd-none' %>
+            <div class="persona-emoji">💝</div>
+            <h5>Empathetic Listener</h5>
+            <p>Emotional validation & safe space</p>
+          </label>
+        </div>
+        <div class="col-md-3 col-6">
+          <label class="persona-card d-block">
+            <%= f.radio_button :persona, 'relationship_coach', class: 'd-none' %>
+            <div class="persona-emoji">🎯</div>
+            <h5>Relationship Coach</h5>
+            <p>Actionable strategies & accountability</p>
+          </label>
+        </div>
+        <div class="col-md-3 col-6">
+          <label class="persona-card d-block">
+            <%= f.radio_button :persona, 'communication_expert', class: 'd-none' %>
+            <div class="persona-emoji">💬</div>
+            <h5>Communication Expert</h5>
+            <p>Language patterns & NVC techniques</p>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex gap-3">
+      <%= f.submit 'Start Conversation', class: 'btn btn-gradient btn-lg' %>
+      <%= link_to 'Cancel', conversations_path, class: 'btn btn-outline-glass btn-lg' %>
+    </div>
+  <% end %>
+</div>

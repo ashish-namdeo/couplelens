@@ -1,0 +1,46 @@
+<div class="container py-4">
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="page-header mb-0">
+      <h1>⚖️ Conflict <span class="gradient-text">Mediator</span></h1>
+      <p>AI-powered conflict resolution for couples</p>
+    </div>
+    <%= link_to new_conflict_session_path, class: 'btn btn-gradient' do %>
+      <span><i class="bi bi-plus-lg me-1"></i> New Session</span>
+    <% end %>
+  </div>
+
+  <% if @conflict_sessions.any? %>
+    <% @conflict_sessions.each do |session| %>
+      <div class="glass-card p-4 mb-3 animate-fade-in-up">
+        <div class="d-flex justify-content-between align-items-start">
+          <div>
+            <h5 class="fw-bold"><%= session.topic %></h5>
+            <p class="text-muted small mb-2">
+              With <%= session.partner_name %> · <%= time_ago_in_words(session.created_at) %> ago
+            </p>
+            <% case session.status %>
+            <% when 'pending_partner' %>
+              <span class="badge bg-warning text-dark">Awaiting Partner</span>
+            <% when 'analyzing' %>
+              <span class="badge bg-info">Analyzing</span>
+            <% when 'completed' %>
+              <span class="badge bg-success">Analysis Complete</span>
+            <% end %>
+          </div>
+          <%= link_to 'View', session, class: 'btn btn-sm btn-outline-glass' %>
+        </div>
+      </div>
+    <% end %>
+  <% else %>
+    <div class="glass-card-static p-5">
+      <div class="empty-state">
+        <div class="empty-icon">⚖️</div>
+        <h3>No conflict sessions yet</h3>
+        <p>Start a mediation session to get unbiased AI analysis of both perspectives.</p>
+        <%= link_to new_conflict_session_path, class: 'btn btn-gradient mt-3' do %>
+          <span>Start Mediation</span>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>

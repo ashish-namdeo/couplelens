@@ -1,0 +1,31 @@
+<div class="container py-4" style="max-width: 700px;">
+  <div class="page-header">
+    <h1>⚖️ New <span class="gradient-text">Mediation Session</span></h1>
+    <p>Share your perspective on the conflict</p>
+  </div>
+
+  <%= form_with(model: @conflict_session, class: 'animate-fade-in') do |f| %>
+    <div class="glass-card-static p-4">
+      <div class="mb-3">
+        <%= f.label :partner_name, "Your Partner's Name", class: 'form-label' %>
+        <%= f.text_field :partner_name, class: 'form-control', placeholder: 'Enter partner name' %>
+      </div>
+
+      <div class="mb-3">
+        <%= f.label :topic, 'Conflict Topic', class: 'form-label' %>
+        <%= f.text_field :topic, class: 'form-control', placeholder: 'e.g., Disagreement about household responsibilities' %>
+      </div>
+
+      <div class="mb-4">
+        <%= f.label :user_perspective, 'Your Perspective', class: 'form-label' %>
+        <%= f.text_area :user_perspective, class: 'form-control', rows: 6, placeholder: "Share your side of the story. Be honest and specific about how you feel and what happened..." %>
+        <div class="form-text text-muted">Your perspective will be analyzed alongside your partner's for unbiased mediation.</div>
+      </div>
+
+      <div class="d-flex gap-3">
+        <%= f.submit 'Submit Perspective', class: 'btn btn-gradient btn-lg' %>
+        <%= link_to 'Cancel', conflict_sessions_path, class: 'btn btn-outline-glass btn-lg' %>
+      </div>
+    </div>
+  <% end %>
+</div>

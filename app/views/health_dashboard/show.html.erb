@@ -1,0 +1,104 @@
+<div class="container py-4">
+  <div class="page-header">
+    <h1>📊 Relationship <span class="gradient-text">Health Dashboard</span></h1>
+    <p>Track your relationship metrics over time</p>
+  </div>
+
+  <!-- Overall Score -->
+  <div class="glass-card-static p-4 mb-4">
+    <div class="row align-items-center">
+      <div class="col-md-3 text-center mb-3 mb-md-0">
+        <div class="score-circle mx-auto <%= @overall_score >= 70 ? 'score-high' : (@overall_score >= 40 ? 'score-medium' : 'score-low') %>">
+          <%= @overall_score %>
+        </div>
+        <div class="mt-2 fw-bold">Overall Score</div>
+      </div>
+      <div class="col-md-9">
+        <div class="row g-3">
+          <% @metric_averages.each do |metric| %>
+            <div class="col-md-4 col-6">
+              <div class="glass-card p-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <span class="small fw-bold"><%= metric[:type] %></span>
+                  <span class="small fw-bold" style="color: <%= metric[:score] >= 70 ? '#2ECC71' : (metric[:score] >= 40 ? '#F39C12' : '#E74C3C') %>;">
+                    <%= metric[:score] %>%
+                  </span>
+                </div>
+                <div class="progress" style="height: 6px;">
+                  <div class="progress-bar" style="width: <%= metric[:score] %>%; background: <%= metric[:score] >= 70 ? '#2ECC71' : (metric[:score] >= 40 ? '#F39C12' : '#E74C3C') %>;"></div>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Charts -->
+  <div class="row g-4">
+    <div class="col-md-6">
+      <div class="glass-card-static p-4">
+        <h5 class="fw-bold mb-3">📈 Communication Trend</h5>
+        <% if @communication_scores.any? %>
+          <%= line_chart @communication_scores.map { |m| [m.recorded_at.strftime('%b %d'), m.score] }, colors: ['#6C63FF'], library: { backgroundColor: 'transparent' } %>
+        <% else %>
+          <div class="empty-state py-3">
+            <p class="text-muted small">No data yet. Metrics will appear as you use the platform.</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="glass-card-static p-4">
+        <h5 class="fw-bold mb-3">💕 Trust Levels</h5>
+        <% if @trust_scores.any? %>
+          <%= line_chart @trust_scores.map { |m| [m.recorded_at.strftime('%b %d'), m.score] }, colors: ['#FF6B9D'], library: { backgroundColor: 'transparent' } %>
+        <% else %>
+          <div class="empty-state py-3">
+            <p class="text-muted small">No data yet. Trust metrics update automatically.</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Metrics -->
+  <div class="glass-card-static p-4 mt-4">
+    <h5 class="fw-bold mb-3">📋 Recent Metrics</h5>
+    <% if @health_metrics.any? %>
+      <div class="table-responsive">
+        <table class="table table-dark-custom">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Type</th>
+              <th>Score</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @health_metrics.limit(10).each do |metric| %>
+              <tr>
+                <td><%= metric.recorded_at.strftime('%b %d, %Y') %></td>
+                <td><span class="badge-glass"><%= metric.metric_type.titleize %></span></td>
+                <td>
+                  <span class="fw-bold" style="color: <%= metric.score >= 70 ? '#2ECC71' : (metric.score >= 40 ? '#F39C12' : '#E74C3C') %>;">
+                    <%= metric.score.round(1) %>%
+                  </span>
+                </td>
+                <td class="text-muted small"><%= metric.notes&.truncate(50) || '—' %></td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <div class="empty-state py-3">
+        <div class="empty-icon">📊</div>
+        <h3>No health metrics yet</h3>
+        <p>Data will appear as you engage with CoupleLens features.</p>
+      </div>
+    <% end %>
+  </div>
+</div>

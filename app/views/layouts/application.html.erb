@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="description" content="CoupleLens - The World's First Relationship Operating System. AI-powered relationship assistance with professional therapist services.">
+    <title>CoupleLens — Relationship Operating System</title>
+
+    <%= csrf_meta_tags %>
+    <%= csp_meta_tag %>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+
+    <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+    <%= javascript_include_tag "application", "data-turbo-track": "reload", defer: true %>
+  </head>
+
+  <body>
+    <%= render 'shared/navbar' %>
+
+    <% if notice.present? %>
+      <div class="container mt-3">
+        <div class="alert alert-success alert-dismissible fade show animate-fade-in" role="alert">
+          <i class="bi bi-check-circle-fill me-2"></i><%= notice %>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      </div>
+    <% end %>
+
+    <% if alert.present? %>
+      <div class="container mt-3">
+        <div class="alert alert-danger alert-dismissible fade show animate-fade-in" role="alert">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i><%= alert %>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+      </div>
+    <% end %>
+
+    <main>
+      <%= yield %>
+    </main>
+
+    <% if !user_signed_in? || controller_name == 'pages' %>
+      <%= render 'shared/footer' %>
+    <% end %>
+  </body>
+</html>

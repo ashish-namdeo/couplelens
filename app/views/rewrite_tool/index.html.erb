@@ -1,0 +1,76 @@
+<div class="container py-4" style="max-width: 800px;">
+  <div class="page-header">
+    <h1>✏️ Message <span class="gradient-text">Rewriter</span></h1>
+    <p>Transform heated messages into constructive communication</p>
+  </div>
+
+  <%= form_tag(rewrite_path, method: :post, class: 'animate-fade-in', data: { turbo: false }) do %>
+    <div class="glass-card-static p-4 mb-4">
+      <div class="mb-3">
+        <label class="form-label">Your Original Message</label>
+        <textarea name="original_message" class="form-control" rows="4" placeholder="Paste or type the message you want to rewrite..."><%= @original %></textarea>
+        <div class="form-text" style="color: #aaa;">Write the message as you naturally would. Our AI will make it calmer and more constructive.</div>
+      </div>
+      <button type="submit" class="btn btn-gradient">
+        <span><i class="bi bi-magic me-1"></i> Rewrite Message</span>
+      </button>
+    </div>
+  <% end %>
+
+  <% if @error.present? %>
+    <div class="alert alert-danger"><%= @error %></div>
+  <% end %>
+
+  <% if @rewritten.present? %>
+    <!-- Tone Analysis -->
+    <div class="glass-card-static p-4 mb-4 animate-fade-in-up">
+      <h5 class="fw-bold mb-3"><i class="bi bi-bar-chart-fill me-2" style="color: #FF6B9D;"></i>Tone Analysis</h5>
+      <div class="row g-3">
+        <div class="col-md-3 col-6">
+          <div class="text-center">
+            <div class="small mb-1" style="color: #ccc;">Original Tone</div>
+            <span class="badge bg-danger"><%= @tone_analysis[:original_tone] %></span>
+          </div>
+        </div>
+        <div class="col-md-3 col-6">
+          <div class="text-center">
+            <div class="small mb-1" style="color: #ccc;">Emotional Intensity</div>
+            <div class="fw-bold" style="color: #FF6B9D;"><%= @tone_analysis[:emotional_intensity] %>%</div>
+            <div class="progress mt-1" style="height: 4px;">
+              <div class="progress-bar bg-danger" style="width: <%= @tone_analysis[:emotional_intensity] %>%"></div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-6">
+          <div class="text-center">
+            <div class="small mb-1" style="color: #ccc;">Defensiveness Risk</div>
+            <div class="fw-bold" style="color: #F39C12;"><%= @tone_analysis[:defensiveness_risk] %>%</div>
+            <div class="progress mt-1" style="height: 4px;">
+              <div class="progress-bar bg-warning" style="width: <%= @tone_analysis[:defensiveness_risk] %>%"></div>
+            </div>
+          </div>
+        </div>
+        <div class="col-md-3 col-6">
+          <div class="text-center">
+            <div class="small mb-1" style="color: #ccc;">Constructiveness</div>
+            <div class="fw-bold" style="color: #2ECC71;"><%= @tone_analysis[:constructiveness] %>%</div>
+            <div class="progress mt-1" style="height: 4px;">
+              <div class="progress-bar bg-success" style="width: <%= @tone_analysis[:constructiveness] %>%"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Rewritten Message -->
+    <div class="glass-card-static p-4 animate-fade-in-up" style="border-color: rgba(46, 204, 113, 0.3);">
+      <h5 class="fw-bold mb-3"><i class="bi bi-check-circle-fill me-2" style="color: #2ECC71;"></i>Rewritten Message</h5>
+      <div class="glass-card p-4" style="background: rgba(46, 204, 113, 0.05); border-color: rgba(46, 204, 113, 0.15);">
+        <%= simple_format(@rewritten) %>
+      </div>
+      <div class="mt-3 p-3" style="background: rgba(108, 99, 255, 0.05); border-radius: 0.5rem;">
+        <small style="color: #ccc;"><i class="bi bi-lightbulb me-1"></i> <strong>Tip:</strong> <%= @tone_analysis[:suggested_approach] %></small>
+      </div>
+    </div>
+  <% end %>
+</div>

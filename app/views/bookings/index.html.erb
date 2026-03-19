@@ -1,0 +1,58 @@
+<div class="container py-4">
+  <div class="page-header">
+    <h1>📅 My <span class="gradient-text">Bookings</span></h1>
+    <p>Manage your therapy sessions</p>
+  </div>
+
+  <!-- Upcoming -->
+  <h5 class="fw-bold mb-3"><i class="bi bi-calendar-check me-2" style="color: #6C63FF;"></i>Upcoming Sessions</h5>
+  <% if @upcoming_bookings.any? %>
+    <% @upcoming_bookings.each do |booking| %>
+      <div class="glass-card p-4 mb-3 animate-fade-in-up">
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="d-flex align-items-center gap-3">
+            <div style="width: 48px; height: 48px; border-radius: 50%; background: linear-gradient(135deg, #6C63FF, #FF6B9D); display: flex; align-items: center; justify-content: center;">
+              👨‍⚕️
+            </div>
+            <div>
+              <h6 class="fw-bold mb-0"><%= booking.therapist_profile.user.full_name %></h6>
+              <div class="text-muted small">
+                <i class="bi bi-clock me-1"></i><%= booking.scheduled_at.strftime('%B %d, %Y at %I:%M %p') %>
+                <span class="badge-glass ms-2"><%= booking.session_type %></span>
+                <span class="badge-glass ms-1"><%= booking.duration %> min</span>
+              </div>
+            </div>
+          </div>
+          <div class="d-flex gap-2 align-items-center">
+            <span class="gradient-text fw-bold">$<%= booking.amount&.round(0) %></span>
+            <%= link_to 'Cancel', cancel_booking_path(booking), method: :patch, data: { confirm: 'Cancel this booking?' }, class: 'btn btn-sm btn-outline-glass' %>
+          </div>
+        </div>
+      </div>
+    <% end %>
+  <% else %>
+    <div class="glass-card-static p-4 mb-4">
+      <p class="text-muted mb-0">No upcoming sessions. <%= link_to 'Find a therapist', therapists_path, class: 'text-decoration-none' %></p>
+    </div>
+  <% end %>
+
+  <!-- Past -->
+  <h5 class="fw-bold mb-3 mt-4"><i class="bi bi-check-circle me-2" style="color: #2ECC71;"></i>Past Sessions</h5>
+  <% if @past_bookings.any? %>
+    <% @past_bookings.each do |booking| %>
+      <div class="glass-card p-4 mb-3" style="opacity: 0.7;">
+        <div class="d-flex justify-content-between align-items-center">
+          <div>
+            <h6 class="fw-bold mb-0"><%= booking.therapist_profile.user.full_name %></h6>
+            <div class="text-muted small"><%= booking.scheduled_at.strftime('%B %d, %Y') %> · <%= booking.session_type %></div>
+          </div>
+          <span class="badge bg-success"><%= booking.status.titleize %></span>
+        </div>
+      </div>
+    <% end %>
+  <% else %>
+    <div class="glass-card-static p-4">
+      <p class="text-muted mb-0">No past sessions yet.</p>
+    </div>
+  <% end %>
+</div>

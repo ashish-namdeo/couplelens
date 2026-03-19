@@ -1,0 +1,92 @@
+<div class="container py-4">
+  <div class="page-header">
+    <h1>⚙️ Admin <span class="gradient-text">Dashboard</span></h1>
+    <p>Platform overview and management</p>
+  </div>
+
+  <!-- Stats -->
+  <div class="row g-4 mb-4">
+    <div class="col-md-2 col-4">
+      <div class="stat-card text-center">
+        <div class="stat-value gradient-text"><%= @total_users %></div>
+        <div class="stat-label">Users</div>
+      </div>
+    </div>
+    <div class="col-md-2 col-4">
+      <div class="stat-card text-center">
+        <div class="stat-value" style="color: #FF6B9D;"><%= @total_therapists %></div>
+        <div class="stat-label">Therapists</div>
+      </div>
+    </div>
+    <div class="col-md-2 col-4">
+      <div class="stat-card text-center">
+        <div class="stat-value" style="color: #F39C12;"><%= @pending_applications %></div>
+        <div class="stat-label">Pending Apps</div>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="stat-card text-center">
+        <div class="stat-value" style="color: #2ECC71;"><%= @total_bookings %></div>
+        <div class="stat-label">Total Bookings</div>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="stat-card text-center">
+        <div class="stat-value" style="color: #00BCD4;">$<%= number_with_delimiter(@total_revenue.round(0)) %></div>
+        <div class="stat-label">Revenue</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Recent Applications -->
+  <div class="glass-card-static p-4">
+    <div class="d-flex justify-content-between align-items-center mb-3">
+      <h5 class="fw-bold mb-0">Recent Therapist Applications</h5>
+      <%= link_to 'View All', admin_therapist_applications_path, class: 'btn btn-sm btn-outline-glass' %>
+    </div>
+
+    <% if @recent_applications.any? %>
+      <div class="table-responsive">
+        <table class="table table-dark-custom">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Specialization</th>
+              <th>Experience</th>
+              <th>Rate</th>
+              <th>Status</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <% @recent_applications.each do |app| %>
+              <tr>
+                <td class="fw-bold"><%= app.full_name %></td>
+                <td><span class="badge-glass"><%= app.specialization %></span></td>
+                <td><%= app.years_experience %> yrs</td>
+                <td>$<%= app.hourly_rate&.round(0) %>/hr</td>
+                <td>
+                  <% case app.status %>
+                  <% when 'submitted' %>
+                    <span class="badge bg-warning text-dark">Submitted</span>
+                  <% when 'under_review' %>
+                    <span class="badge bg-info">Reviewing</span>
+                  <% when 'approved' %>
+                    <span class="badge bg-success">Approved</span>
+                  <% when 'rejected' %>
+                    <span class="badge bg-danger">Rejected</span>
+                  <% end %>
+                </td>
+                <td>
+                  <%= link_to 'Review', admin_therapist_application_path(app), class: 'btn btn-sm btn-outline-glass' %>
+                </td>
+              </tr>
+            <% end %>
+          </tbody>
+        </table>
+      </div>
+    <% else %>
+      <p class="text-muted">No applications yet.</p>
+    <% end %>
+  </div>
+</div>

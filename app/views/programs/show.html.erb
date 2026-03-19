@@ -1,0 +1,57 @@
+<div class="container py-4" style="max-width: 800px;">
+  <%= link_to programs_path, class: 'btn btn-sm btn-outline-glass mb-3' do %>
+    <i class="bi bi-arrow-left me-1"></i> Back
+  <% end %>
+
+  <div class="glass-card-static p-4 mb-4">
+    <div class="d-flex justify-content-between align-items-start mb-3">
+      <div>
+        <span class="badge-gradient mb-2 d-inline-block"><%= @program.category %></span>
+        <h2 class="fw-bold"><%= @program.title %></h2>
+        <div class="d-flex gap-3 text-muted small">
+          <span><i class="bi bi-clock me-1"></i><%= @program.duration_weeks %> weeks</span>
+          <span><i class="bi bi-book me-1"></i><%= @lessons.count %> lessons</span>
+          <span><i class="bi bi-bar-chart me-1"></i><%= @program.difficulty %></span>
+        </div>
+      </div>
+      <% if @user_program %>
+        <span class="badge bg-success">Enrolled</span>
+      <% else %>
+        <%= link_to enroll_program_path(@program), method: :post, class: 'btn btn-gradient' do %>
+          <span>Enroll Now</span>
+        <% end %>
+      <% end %>
+    </div>
+
+    <p class="text-muted"><%= @program.description %></p>
+
+    <% if @user_program %>
+      <div class="progress mb-2" style="height: 8px;">
+        <div class="progress-bar" style="width: <%= @program.progress_for(current_user) %>%"></div>
+      </div>
+      <small class="text-muted"><%= @program.progress_for(current_user) %>% complete</small>
+    <% end %>
+  </div>
+
+  <!-- Lessons -->
+  <h5 class="fw-bold mb-3">📖 Course Content</h5>
+  <% @lessons.each_with_index do |lesson, index| %>
+    <div class="glass-card p-4 mb-3 animate-fade-in-up">
+      <div class="d-flex align-items-start gap-3">
+        <div style="width: 36px; height: 36px; border-radius: 50%; background: linear-gradient(135deg, #6C63FF, #FF6B9D); display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.85rem; flex-shrink: 0;">
+          <%= index + 1 %>
+        </div>
+        <div class="flex-grow-1">
+          <h6 class="fw-bold mb-1"><%= lesson.title %></h6>
+          <p class="text-muted small mb-0"><%= lesson.content.truncate(200) %></p>
+          <% if lesson.video_url.present? %>
+            <span class="badge-glass mt-2 d-inline-block"><i class="bi bi-play-fill me-1"></i>Video</span>
+          <% end %>
+        </div>
+        <% if @user_program && index < (@user_program.current_lesson || 0) %>
+          <i class="bi bi-check-circle-fill text-success" style="font-size: 1.5rem;"></i>
+        <% end %>
+      </div>
+    </div>
+  <% end %>
+</div>

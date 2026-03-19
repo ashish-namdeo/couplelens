@@ -1,0 +1,55 @@
+<div class="container py-4" style="max-width: 800px;">
+  <%= link_to conflict_sessions_path, class: 'btn btn-sm btn-outline-glass mb-3' do %>
+    <i class="bi bi-arrow-left me-1"></i> Back
+  <% end %>
+
+  <div class="page-header">
+    <h1>⚖️ <span class="gradient-text"><%= @conflict_session.topic %></span></h1>
+    <p>Session with <%= @conflict_session.partner_name %></p>
+  </div>
+
+  <div class="row g-4">
+    <!-- User's Perspective -->
+    <div class="col-md-6">
+      <div class="glass-card-static p-4 h-100">
+        <h5 class="fw-bold mb-3"><i class="bi bi-person-fill me-2" style="color: #6C63FF;"></i><%= current_user.first_name %>'s Perspective</h5>
+        <p><%= simple_format(@conflict_session.user_perspective) %></p>
+      </div>
+    </div>
+
+    <!-- Partner's Perspective -->
+    <div class="col-md-6">
+      <div class="glass-card-static p-4 h-100">
+        <h5 class="fw-bold mb-3"><i class="bi bi-person-fill me-2" style="color: #FF6B9D;"></i><%= @conflict_session.partner_name %>'s Perspective</h5>
+        <% if @conflict_session.partner_perspective.present? %>
+          <p><%= simple_format(@conflict_session.partner_perspective) %></p>
+        <% else %>
+          <%= form_with(model: @conflict_session, method: :patch) do |f| %>
+            <%= f.text_area :partner_perspective, class: 'form-control mb-3', rows: 5, placeholder: "Enter your partner's perspective..." %>
+            <%= f.submit 'Save Perspective', class: 'btn btn-gradient btn-sm' %>
+          <% end %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <!-- AI Analysis -->
+  <% if @conflict_session.completed? %>
+    <div class="glass-card-static p-4 mt-4" style="border-color: rgba(46, 204, 113, 0.3);">
+      <h5 class="fw-bold mb-3"><i class="bi bi-robot me-2" style="color: #2ECC71;"></i>AI Analysis</h5>
+      <div class="mb-4">
+        <%= simple_format(@conflict_session.ai_analysis) %>
+      </div>
+      <div class="glass-card p-3" style="background: rgba(46, 204, 113, 0.08); border-color: rgba(46, 204, 113, 0.2);">
+        <h6 class="fw-bold" style="color: #2ECC71;"><i class="bi bi-lightbulb-fill me-1"></i> Summary</h6>
+        <p class="mb-0"><%= @conflict_session.ai_summary %></p>
+      </div>
+    </div>
+  <% elsif @conflict_session.partner_perspective.present? %>
+    <div class="text-center mt-4">
+      <%= button_to analyze_conflict_session_path(@conflict_session), method: :post, class: 'btn btn-gradient btn-lg', data: { turbo: false } do %>
+        <span><i class="bi bi-magic me-1"></i> Generate AI Analysis</span>
+      <% end %>
+    </div>
+  <% end %>
+</div>

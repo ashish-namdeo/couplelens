@@ -1,0 +1,65 @@
+<div class="container py-4" style="max-width: 800px;">
+  <%= link_to compatibility_assessments_path, class: 'btn btn-sm btn-outline-glass mb-3' do %>
+    <i class="bi bi-arrow-left me-1"></i> Back
+  <% end %>
+
+  <div class="page-header">
+    <h1>💕 Assessment with <span class="gradient-text"><%= @assessment.partner_name %></span></h1>
+    <p>Generated on <%= @assessment.created_at.strftime('%B %d, %Y') %></p>
+  </div>
+
+  <!-- Overall Score -->
+  <div class="glass-card-static p-4 mb-4 text-center">
+    <div class="score-circle mx-auto mb-3 <%= @assessment.overall_score.to_f >= 70 ? 'score-high' : (@assessment.overall_score.to_f >= 40 ? 'score-medium' : 'score-low') %>" style="width: 100px; height: 100px; font-size: 2rem;">
+      <%= @assessment.overall_score&.round(0) %>%
+    </div>
+    <h4 class="fw-bold">Overall Compatibility</h4>
+  </div>
+
+  <!-- Score Breakdown -->
+  <div class="row g-4 mb-4">
+    <div class="col-md-4">
+      <div class="glass-card p-4 text-center">
+        <div style="font-size: 2rem;">💰</div>
+        <h5 class="fw-bold mt-2">Financial</h5>
+        <div class="display-6 fw-bold gradient-text"><%= @assessment.financial_score&.round(1) %>%</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="glass-card p-4 text-center">
+        <div style="font-size: 2rem;">🏡</div>
+        <h5 class="fw-bold mt-2">Lifestyle</h5>
+        <div class="display-6 fw-bold gradient-text"><%= @assessment.lifestyle_score&.round(1) %>%</div>
+      </div>
+    </div>
+    <div class="col-md-4">
+      <div class="glass-card p-4 text-center">
+        <div style="font-size: 2rem;">👶</div>
+        <h5 class="fw-bold mt-2">Parenting</h5>
+        <div class="display-6 fw-bold gradient-text"><%= @assessment.parenting_score&.round(1) %>%</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Strengths & Risks -->
+  <div class="row g-4 mb-4">
+    <div class="col-md-6">
+      <div class="glass-card-static p-4 h-100" style="border-color: rgba(46, 204, 113, 0.3);">
+        <h5 class="fw-bold mb-3" style="color: #2ECC71;"><i class="bi bi-check-circle-fill me-2"></i>Strengths</h5>
+        <p>• <%= @assessment.strengths %></p>
+      </div>
+    </div>
+    <div class="col-md-6">
+      <div class="glass-card-static p-4 h-100" style="border-color: rgba(243, 156, 18, 0.3);">
+        <h5 class="fw-bold mb-3" style="color: #F39C12;"><i class="bi bi-exclamation-triangle-fill me-2"></i>Areas for Growth</h5>
+        <p>• <%= @assessment.risk_areas %></p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Full Report -->
+  <div class="glass-card-static p-4">
+    <h5 class="fw-bold mb-3"><i class="bi bi-file-text-fill me-2" style="color: #6C63FF;"></i>Full Report</h5>
+    <%= simple_format(@assessment.full_report) %>
+  </div>
+</div>

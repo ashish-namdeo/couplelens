@@ -1,0 +1,777 @@
+// CoupleLens Custom Bootstrap Theme
+// Premium Design System
+
+// 1. Custom Variables
+$primary: #6C63FF;
+$secondary: #FF6B9D;
+$success: #2ECC71;
+$info: #00BCD4;
+$warning: #F39C12;
+$danger: #E74C3C;
+$light: #F8F9FE;
+$dark: #1A1A2E;
+
+// Custom CoupleLens colors
+$cl-gradient-start: #6C63FF;
+$cl-gradient-end: #FF6B9D;
+$cl-bg-dark: #0F0E17;
+$cl-bg-card: #1A1A2E;
+$cl-text-muted: #A0A0B8;
+$cl-border: rgba(108, 99, 255, 0.15);
+$cl-glow: rgba(108, 99, 255, 0.3);
+
+// Font
+$font-family-sans-serif: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+// Border radius
+$border-radius: 0.75rem;
+$border-radius-lg: 1rem;
+$border-radius-sm: 0.5rem;
+
+// Shadows
+$box-shadow: 0 4px 24px rgba(0, 0, 0, 0.12);
+$box-shadow-lg: 0 8px 48px rgba(0, 0, 0, 0.2);
+
+// Card
+$card-border-radius: 1rem;
+$card-border-width: 0;
+
+// Navbar
+$navbar-dark-color: rgba(255, 255, 255, 0.85);
+$navbar-dark-hover-color: #fff;
+$navbar-padding-y: 0.75rem;
+
+// Buttons
+$btn-border-radius: 0.5rem;
+$btn-padding-y: 0.625rem;
+$btn-padding-x: 1.25rem;
+$btn-font-weight: 600;
+
+// Input
+$input-border-radius: 0.5rem;
+$input-bg: rgba(255, 255, 255, 0.05);
+$input-border-color: $cl-border;
+
+// 2. Import Bootstrap
+@import "bootstrap/scss/bootstrap";
+
+// 3. Custom Styles
+
+// === GLOBAL ===
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+
+body {
+  background: $cl-bg-dark;
+  color: #E4E4F0;
+  font-family: $font-family-sans-serif;
+  min-height: 100vh;
+}
+
+// === GLASSMORPHISM CARDS ===
+.glass-card {
+  background: rgba(26, 26, 46, 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid $cl-border;
+  border-radius: $border-radius-lg;
+  transition: all 0.3s ease;
+
+  &:hover {
+    border-color: rgba(108, 99, 255, 0.35);
+    box-shadow: 0 8px 32px rgba(108, 99, 255, 0.15);
+    transform: translateY(-2px);
+  }
+}
+
+.glass-card-static {
+  @extend .glass-card;
+  &:hover {
+    transform: none;
+    box-shadow: none;
+  }
+}
+
+// === GRADIENT TEXT ===
+.gradient-text {
+  background: linear-gradient(135deg, $cl-gradient-start, $cl-gradient-end);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+// === PRIMARY GRADIENT BUTTON ===
+.btn-gradient {
+  background: linear-gradient(135deg, $cl-gradient-start, $cl-gradient-end);
+  border: none;
+  color: white;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, lighten($cl-gradient-start, 8%), lighten($cl-gradient-end, 8%));
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    border-radius: inherit;
+  }
+
+  &:hover {
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 24px rgba(108, 99, 255, 0.4);
+
+    &::before {
+      opacity: 1;
+    }
+  }
+
+  span {
+    position: relative;
+    z-index: 1;
+  }
+}
+
+.btn-outline-glass {
+  background: transparent;
+  border: 1px solid $cl-border;
+  color: #E4E4F0;
+  font-weight: 500;
+
+  &:hover {
+    background: rgba(108, 99, 255, 0.1);
+    border-color: $cl-gradient-start;
+    color: white;
+  }
+}
+
+// === NAVBAR ===
+.navbar-custom {
+  background: rgba(15, 14, 23, 0.85);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid $cl-border;
+  padding: 0.75rem 0;
+
+  .navbar-brand {
+    font-weight: 800;
+    font-size: 1.4rem;
+    letter-spacing: -0.5px;
+  }
+
+  .nav-link {
+    font-weight: 500;
+    font-size: 0.9rem;
+    padding: 0.5rem 1rem;
+    border-radius: 0.5rem;
+    transition: all 0.2s ease;
+
+    &:hover, &.active {
+      background: rgba(108, 99, 255, 0.12);
+      color: white;
+    }
+  }
+}
+
+// === HERO SECTION ===
+.hero-section {
+  position: relative;
+  padding: 6rem 0 4rem;
+  overflow: hidden;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -20%;
+    width: 60%;
+    height: 120%;
+    background: radial-gradient(ellipse, rgba(108, 99, 255, 0.15) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  &::after {
+    content: '';
+    position: absolute;
+    top: -30%;
+    right: -20%;
+    width: 50%;
+    height: 100%;
+    background: radial-gradient(ellipse, rgba(255, 107, 157, 0.1) 0%, transparent 70%);
+    pointer-events: none;
+  }
+}
+
+// === STAT CARDS ===
+.stat-card {
+  @extend .glass-card;
+  padding: 1.5rem;
+
+  .stat-icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+
+  .stat-value {
+    font-size: 2rem;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 0.25rem;
+  }
+
+  .stat-label {
+    color: $cl-text-muted;
+    font-size: 0.85rem;
+    font-weight: 500;
+  }
+}
+
+// === SIDEBAR NAVIGATION ===
+.sidebar-nav {
+  @extend .glass-card-static;
+  padding: 1rem;
+
+  .nav-item {
+    margin-bottom: 0.25rem;
+
+    .nav-link {
+      color: $cl-text-muted;
+      font-weight: 500;
+      font-size: 0.9rem;
+      padding: 0.65rem 1rem;
+      border-radius: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      transition: all 0.2s ease;
+
+      &:hover, &.active {
+        color: white;
+        background: rgba(108, 99, 255, 0.12);
+      }
+
+      &.active {
+        background: linear-gradient(135deg, rgba(108, 99, 255, 0.2), rgba(255, 107, 157, 0.1));
+        border-left: 3px solid $cl-gradient-start;
+      }
+
+      .nav-icon {
+        font-size: 1.1rem;
+        width: 24px;
+        text-align: center;
+      }
+    }
+  }
+}
+
+// === CHAT ===
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 200px);
+  min-height: 400px;
+}
+
+.chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1.5rem;
+
+  &::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: rgba(108, 99, 255, 0.3);
+    border-radius: 3px;
+  }
+}
+
+.message-bubble {
+  max-width: 75%;
+  padding: 1rem 1.25rem;
+  border-radius: 1rem;
+  margin-bottom: 1rem;
+  animation: fadeInUp 0.3s ease;
+
+  &.user-message {
+    background: linear-gradient(135deg, $cl-gradient-start, darken($cl-gradient-start, 10%));
+    margin-left: auto;
+    border-bottom-right-radius: 0.25rem;
+    color: white;
+  }
+
+  &.assistant-message {
+    background: rgba(26, 26, 46, 0.9);
+    border: 1px solid $cl-border;
+    border-bottom-left-radius: 0.25rem;
+  }
+
+  &.system-message {
+    background: rgba(108, 99, 255, 0.08);
+    border: 1px dashed rgba(108, 99, 255, 0.2);
+    max-width: 90%;
+    margin: 0 auto 1rem;
+    text-align: center;
+    font-size: 0.85rem;
+    color: $cl-text-muted;
+  }
+}
+
+.chat-input-area {
+  padding: 1rem 1.5rem;
+  border-top: 1px solid $cl-border;
+  background: rgba(15, 14, 23, 0.5);
+  backdrop-filter: blur(10px);
+
+  .form-control {
+    background: rgba(26, 26, 46, 0.8);
+    border: 1px solid $cl-border;
+    color: #E4E4F0;
+    padding: 0.75rem 1rem;
+
+    &:focus {
+      border-color: $cl-gradient-start;
+      box-shadow: 0 0 0 0.15rem rgba(108, 99, 255, 0.2);
+      background: rgba(26, 26, 46, 0.9);
+      color: white;
+    }
+
+    &::placeholder {
+      color: rgba(160, 160, 184, 0.5);
+    }
+  }
+}
+
+// === FORM CONTROLS (DARK) ===
+.form-control, .form-select {
+  background: rgba(26, 26, 46, 0.8);
+  border: 1px solid $cl-border;
+  color: #E4E4F0;
+
+  &:focus {
+    border-color: $cl-gradient-start;
+    box-shadow: 0 0 0 0.15rem rgba(108, 99, 255, 0.2);
+    background: rgba(26, 26, 46, 0.9);
+    color: white;
+  }
+
+  &::placeholder {
+    color: rgba(160, 160, 184, 0.5);
+  }
+}
+
+.form-label {
+  color: #C0C0D0;
+  font-weight: 500;
+  font-size: 0.9rem;
+  margin-bottom: 0.4rem;
+}
+
+.form-check-input {
+  background-color: rgba(26, 26, 46, 0.8);
+  border-color: $cl-border;
+
+  &:checked {
+    background-color: $cl-gradient-start;
+    border-color: $cl-gradient-start;
+  }
+}
+
+// === BADGES ===
+.badge-gradient {
+  background: linear-gradient(135deg, $cl-gradient-start, $cl-gradient-end);
+  color: white;
+  font-weight: 600;
+  padding: 0.35rem 0.75rem;
+  border-radius: 2rem;
+  font-size: 0.75rem;
+}
+
+.badge-glass {
+  background: rgba(108, 99, 255, 0.15);
+  color: $cl-gradient-start;
+  font-weight: 600;
+  padding: 0.35rem 0.75rem;
+  border-radius: 2rem;
+  font-size: 0.75rem;
+  border: 1px solid rgba(108, 99, 255, 0.2);
+}
+
+// === TIMELINE ===
+.memory-timeline {
+  position: relative;
+  padding-left: 2rem;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: 0.75rem;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(180deg, $cl-gradient-start, $cl-gradient-end, transparent);
+  }
+
+  .timeline-item {
+    position: relative;
+    margin-bottom: 2rem;
+    padding-left: 1.5rem;
+
+    &::before {
+      content: '';
+      position: absolute;
+      left: -1.35rem;
+      top: 0.5rem;
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      background: $cl-gradient-start;
+      border: 2px solid $cl-bg-dark;
+      box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.3);
+    }
+  }
+}
+
+// === ANIMATION ===
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 20px rgba(108, 99, 255, 0.2);
+  }
+  50% {
+    box-shadow: 0 0 40px rgba(108, 99, 255, 0.4);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.4s ease;
+}
+
+.animate-fade-in-up {
+  animation: fadeInUp 0.5s ease;
+}
+
+// === PROGRESS BARS ===
+.progress {
+  background: rgba(26, 26, 46, 0.8);
+  border-radius: 1rem;
+  height: 8px;
+
+  .progress-bar {
+    background: linear-gradient(135deg, $cl-gradient-start, $cl-gradient-end);
+    border-radius: 1rem;
+  }
+}
+
+// === SCORE CIRCLES ===
+.score-circle {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  font-weight: 800;
+  background: rgba(26, 26, 46, 0.8);
+  border: 3px solid $cl-gradient-start;
+  position: relative;
+
+  &.score-high {
+    border-color: $success;
+    color: $success;
+  }
+
+  &.score-medium {
+    border-color: $warning;
+    color: $warning;
+  }
+
+  &.score-low {
+    border-color: $danger;
+    color: $danger;
+  }
+}
+
+// === TABLE ===
+.table-dark-custom {
+  --bs-table-bg: transparent;
+  --bs-table-striped-bg: rgba(108, 99, 255, 0.05);
+  --bs-table-hover-bg: rgba(108, 99, 255, 0.08);
+  color: #E4E4F0;
+  border-color: $cl-border;
+
+  th {
+    font-weight: 600;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: $cl-text-muted;
+    border-color: $cl-border;
+  }
+
+  td {
+    border-color: $cl-border;
+    vertical-align: middle;
+  }
+}
+
+// === ALERT TOASTS ===
+.alert {
+  border-radius: $border-radius;
+  border: none;
+  font-weight: 500;
+
+  &.alert-success {
+    background: rgba(46, 204, 113, 0.15);
+    color: lighten($success, 10%);
+    border: 1px solid rgba(46, 204, 113, 0.3);
+  }
+
+  &.alert-danger {
+    background: rgba(231, 76, 60, 0.15);
+    color: lighten($danger, 10%);
+    border: 1px solid rgba(231, 76, 60, 0.3);
+  }
+
+  &.alert-warning {
+    background: rgba(243, 156, 18, 0.15);
+    color: lighten($warning, 10%);
+    border: 1px solid rgba(243, 156, 18, 0.3);
+  }
+
+  &.alert-info {
+    background: rgba(0, 188, 212, 0.15);
+    color: lighten($info, 10%);
+    border: 1px solid rgba(0, 188, 212, 0.3);
+  }
+}
+
+// === FEATURE CARDS (Landing) ===
+.feature-card {
+  @extend .glass-card;
+  padding: 2rem;
+  text-align: center;
+  height: 100%;
+
+  .feature-icon {
+    width: 64px;
+    height: 64px;
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    margin: 0 auto 1.25rem;
+    background: linear-gradient(135deg, rgba(108, 99, 255, 0.15), rgba(255, 107, 157, 0.1));
+    border: 1px solid rgba(108, 99, 255, 0.2);
+  }
+
+  h3 {
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-bottom: 0.75rem;
+  }
+
+  p {
+    color: $cl-text-muted;
+    font-size: 0.9rem;
+    line-height: 1.6;
+    margin: 0;
+  }
+}
+
+// === PRICING CARD ===
+.pricing-card {
+  @extend .glass-card;
+  padding: 2.5rem 2rem;
+  text-align: center;
+
+  &.popular {
+    border-color: $cl-gradient-start;
+    box-shadow: 0 0 30px rgba(108, 99, 255, 0.2);
+    position: relative;
+
+    &::before {
+      content: 'Most Popular';
+      position: absolute;
+      top: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, $cl-gradient-start, $cl-gradient-end);
+      color: white;
+      padding: 0.25rem 1rem;
+      border-radius: 2rem;
+      font-size: 0.75rem;
+      font-weight: 700;
+    }
+  }
+
+  .price {
+    font-size: 3rem;
+    font-weight: 900;
+
+    small {
+      font-size: 1rem;
+      color: $cl-text-muted;
+      font-weight: 400;
+    }
+  }
+}
+
+// === SCROLLBAR ===
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: $cl-bg-dark;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(108, 99, 255, 0.3);
+  border-radius: 4px;
+
+  &:hover {
+    background: rgba(108, 99, 255, 0.5);
+  }
+}
+
+// === RESPONSIVE ===
+@media (max-width: 768px) {
+  .hero-section {
+    padding: 3rem 0 2rem;
+  }
+
+  .stat-card .stat-value {
+    font-size: 1.5rem;
+  }
+
+  .chat-container {
+    height: calc(100vh - 160px);
+  }
+
+  .sidebar-nav {
+    margin-bottom: 1.5rem;
+  }
+}
+
+// === PAGE HEADER ===
+.page-header {
+  margin-bottom: 2rem;
+
+  h1 {
+    font-weight: 800;
+    font-size: 1.8rem;
+    margin-bottom: 0.25rem;
+  }
+
+  p {
+    color: $cl-text-muted;
+    font-size: 0.95rem;
+    margin: 0;
+  }
+}
+
+// === EMPTY STATE ===
+.empty-state {
+  text-align: center;
+  padding: 3rem 1rem;
+
+  .empty-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    opacity: 0.5;
+  }
+
+  h3 {
+    font-weight: 700;
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+  }
+
+  p {
+    color: $cl-text-muted;
+    max-width: 400px;
+    margin: 0 auto;
+  }
+}
+
+// === PERSONA SELECTOR ===
+.persona-card {
+  @extend .glass-card;
+  padding: 1.25rem;
+  cursor: pointer;
+  text-align: center;
+
+  input[type="radio"] {
+    display: none;
+  }
+
+  &.selected, &:has(input:checked) {
+    border-color: $cl-gradient-start;
+    background: rgba(108, 99, 255, 0.1);
+    box-shadow: 0 0 20px rgba(108, 99, 255, 0.15);
+  }
+
+  .persona-emoji {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+
+  h5 {
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-bottom: 0.25rem;
+  }
+
+  p {
+    font-size: 0.8rem;
+    color: $cl-text-muted;
+    margin: 0;
+  }
+}
+
+// Devise form styling
+.devise-form {
+  max-width: 420px;
+  margin: 0 auto;
+  padding: 2rem 0;
+
+  .glass-card {
+    padding: 2.5rem;
+  }
+}

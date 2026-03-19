@@ -1,0 +1,150 @@
+<div class="container py-4">
+  <div class="page-header">
+    <h1>Welcome back, <span class="gradient-text"><%= current_user.first_name %></span> 👋</h1>
+    <p>Here's your relationship overview</p>
+  </div>
+
+  <!-- Stats Row -->
+  <div class="row g-4 mb-4">
+    <div class="col-md-3 col-6">
+      <div class="stat-card">
+        <div class="stat-icon" style="background: rgba(108, 99, 255, 0.15);">💬</div>
+        <div class="stat-value gradient-text"><%= @total_conversations %></div>
+        <div class="stat-label">Conversations</div>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="stat-card">
+        <div class="stat-icon" style="background: rgba(46, 204, 113, 0.15);">📊</div>
+        <div class="stat-value" style="color: #2ECC71;"><%= @avg_health_score %>%</div>
+        <div class="stat-label">Health Score</div>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="stat-card">
+        <div class="stat-icon" style="background: rgba(255, 107, 157, 0.15);">👨‍⚕️</div>
+        <div class="stat-value" style="color: #FF6B9D;"><%= @total_sessions %></div>
+        <div class="stat-label">Therapy Sessions</div>
+      </div>
+    </div>
+    <div class="col-md-3 col-6">
+      <div class="stat-card">
+        <div class="stat-icon" style="background: rgba(243, 156, 18, 0.15);">💝</div>
+        <div class="stat-value" style="color: #F39C12;"><%= @memories_count %></div>
+        <div class="stat-label">Memories</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Quick Actions -->
+    <div class="col-lg-8">
+      <div class="glass-card-static p-4 mb-4">
+        <h5 class="fw-bold mb-3"><i class="bi bi-lightning-fill text-warning me-2"></i>Quick Actions</h5>
+        <div class="row g-3">
+          <div class="col-md-4">
+            <%= link_to new_conversation_path, class: 'glass-card p-3 text-center text-decoration-none d-block' do %>
+              <div style="font-size: 2rem;">🤖</div>
+              <div class="fw-bold small mt-2">New AI Chat</div>
+            <% end %>
+          </div>
+          <div class="col-md-4">
+            <%= link_to new_conflict_session_path, class: 'glass-card p-3 text-center text-decoration-none d-block' do %>
+              <div style="font-size: 2rem;">⚖️</div>
+              <div class="fw-bold small mt-2">Start Mediation</div>
+            <% end %>
+          </div>
+          <div class="col-md-4">
+            <%= link_to rewrite_path, class: 'glass-card p-3 text-center text-decoration-none d-block' do %>
+              <div style="font-size: 2rem;">✏️</div>
+              <div class="fw-bold small mt-2">Rewrite Message</div>
+            <% end %>
+          </div>
+        </div>
+      </div>
+
+      <!-- Recent Conversations -->
+      <div class="glass-card-static p-4 mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h5 class="fw-bold mb-0"><i class="bi bi-chat-dots-fill me-2" style="color: #6C63FF;"></i>Recent Conversations</h5>
+          <%= link_to 'View All', conversations_path, class: 'btn btn-sm btn-outline-glass' %>
+        </div>
+        <% if @recent_conversations.any? %>
+          <% @recent_conversations.each do |conv| %>
+            <%= link_to conv, class: 'glass-card p-3 mb-2 d-block text-decoration-none' do %>
+              <div class="d-flex align-items-center justify-content-between">
+                <div>
+                  <span class="me-2"><%= conv.persona_icon %></span>
+                  <span class="fw-bold"><%= conv.title %></span>
+                  <span class="badge-glass ms-2"><%= conv.persona_display_name %></span>
+                </div>
+                <small class="text-muted"><%= time_ago_in_words(conv.updated_at) %> ago</small>
+              </div>
+            <% end %>
+          <% end %>
+        <% else %>
+          <div class="empty-state py-3">
+            <p class="text-muted">No conversations yet. Start your first AI chat!</p>
+          </div>
+        <% end %>
+      </div>
+    </div>
+
+    <!-- Sidebar -->
+    <div class="col-lg-4">
+      <!-- Upcoming Bookings -->
+      <div class="glass-card-static p-4 mb-4">
+        <h5 class="fw-bold mb-3"><i class="bi bi-calendar-check-fill me-2" style="color: #FF6B9D;"></i>Upcoming Sessions</h5>
+        <% if @upcoming_bookings.any? %>
+          <% @upcoming_bookings.each do |booking| %>
+            <div class="glass-card p-3 mb-2">
+              <div class="fw-bold small"><%= booking.therapist_profile.user.full_name %></div>
+              <div class="text-muted" style="font-size: 0.8rem;">
+                <i class="bi bi-clock me-1"></i><%= booking.scheduled_at.strftime('%B %d, %I:%M %p') %>
+              </div>
+              <span class="badge-glass mt-1 d-inline-block"><%= booking.session_type %></span>
+            </div>
+          <% end %>
+        <% else %>
+          <p class="text-muted small">No upcoming sessions. <%= link_to 'Browse therapists', therapists_path, class: 'text-decoration-none' %></p>
+        <% end %>
+      </div>
+
+      <!-- Active Programs -->
+      <div class="glass-card-static p-4 mb-4">
+        <h5 class="fw-bold mb-3"><i class="bi bi-book-fill me-2" style="color: #2ECC71;"></i>Active Programs</h5>
+        <% if @active_programs.any? %>
+          <% @active_programs.each do |up| %>
+            <div class="glass-card p-3 mb-2">
+              <div class="fw-bold small"><%= up.program.title %></div>
+              <div class="progress mt-2" style="height: 6px;">
+                <div class="progress-bar" style="width: <%= up.program.progress_for(current_user) %>%"></div>
+              </div>
+              <div class="text-muted mt-1" style="font-size: 0.75rem;"><%= up.program.progress_for(current_user) %>% complete</div>
+            </div>
+          <% end %>
+        <% else %>
+          <p class="text-muted small">No active programs. <%= link_to 'Browse programs', programs_path, class: 'text-decoration-none' %></p>
+        <% end %>
+      </div>
+
+      <!-- Recent Memories -->
+      <div class="glass-card-static p-4">
+        <h5 class="fw-bold mb-3"><i class="bi bi-heart-fill me-2" style="color: #F39C12;"></i>Recent Memories</h5>
+        <% if @recent_memories.any? %>
+          <% @recent_memories.each do |memory| %>
+            <div class="d-flex align-items-start mb-3">
+              <span class="me-2" style="font-size: 1.2rem;"><%= memory.memory_icon %></span>
+              <div>
+                <div class="fw-bold small"><%= memory.title %></div>
+                <div class="text-muted" style="font-size: 0.75rem;"><%= memory.memory_date.strftime('%B %d, %Y') %></div>
+              </div>
+            </div>
+          <% end %>
+        <% else %>
+          <p class="text-muted small">No memories yet. <%= link_to 'Add your first', new_memory_path, class: 'text-decoration-none' %></p>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
