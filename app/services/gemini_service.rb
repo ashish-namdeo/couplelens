@@ -1,63 +1,96 @@
 class GeminiService
-  MODEL = "gemini-2.5-flash-lite"
+  MODEL = "gemini-2.5-flash"
+  MAX_RETRIES = 3
 
   def initialize
     @client = OpenAI::Client.new
   end
 
   # AI Chat Assistant — sends full conversation history
-  def chat(messages)
-    response = @client.chat(
-      parameters: {
-        model: MODEL,
-        messages: messages,
-        temperature: 0.7,
-        max_tokens: 1024
-      }
+  def chat(messages, language: "english")
+    if language == "hindi"
+      # Inject language instruction into the system message
+      messages = messages.map do |m|
+        if m[:role] == "system"
+          { role: "system", content: m[:content] + "\n\nIMPORTANT: You MUST respond in Hindi (Devanagari script). The user will communicate in Hindi." }
+        else
+          m
+        end
+      end
+    end
+
+    response = chat_with_retry(
+      messages: messages,
+      temperature: 0.7,
+      max_tokens: 1024
     )
     extract_reply(response)
   end
 
   # AI Conflict Mediator — analyzes both perspectives
-  def mediate_conflict(topic:, user_name:, partner_name:, user_perspective:, partner_perspective:)
+  def mediate_conflict(topic:, user_name:, partner_name:, user_perspective:, partner_perspective:, language: "english", images: [])
+    lang_instruction = if language == "hindi"
+      "You MUST write your entire analysis and summary in Hindi (Devanagari script)."
+    else
+      "Write your analysis in English."
+    end
+
+    screenshot_instruction = if images.any?
+      "Chat screenshots from WhatsApp/messaging apps are attached. Carefully read and analyze the conversation in the screenshots to understand the conflict, tone, and communication patterns. Use this as additional context alongside the written perspectives."
+    else
+      ""
+    end
+
+    system_content = <<~PROMPT
+      You are an expert AI couples mediator. Analyze both partners' perspectives on a conflict without taking sides.
+      #{lang_instruction}
+      #{screenshot_instruction}
+      Provide:
+      1. A detailed analysis of both perspectives, identifying underlying emotions and needs
+      2. Common ground between the partners
+      3. Specific, actionable recommendations for resolution
+      #{"4. If chat screenshots are provided, analyze the communication patterns, tone, and key moments in the conversation that contributed to the conflict." if images.any?}
+
+      Format your response in two clearly labeled sections:
+      ANALYSIS: (detailed analysis)
+      SUMMARY: (2-3 sentence summary)
+    PROMPT
+
+    # Build user message content (text + images)
+    user_text = <<~MSG
+      **Conflict Topic:** #{topic}
+
+      **#{user_name}'s Perspective:**
+      #{user_perspective}
+
+      **#{partner_name}'s Perspective:**
+      #{partner_perspective}
+
+      Please provide a balanced mediation analysis.
+    MSG
+
+    if images.any?
+      # Multimodal: text + images
+      user_content = [{ type: "text", text: user_text }]
+      images.each do |img|
+        user_content << {
+          type: "image_url",
+          image_url: { url: "data:#{img[:mime_type]};base64,#{img[:base64]}" }
+        }
+      end
+    else
+      user_content = user_text
+    end
+
     messages = [
-      {
-        role: "system",
-        content: <<~PROMPT
-          You are an expert AI couples mediator. Analyze both partners' perspectives on a conflict without taking sides.
-          Provide:
-          1. A detailed analysis of both perspectives, identifying underlying emotions and needs
-          2. Common ground between the partners
-          3. Specific, actionable recommendations for resolution
-
-          Format your response in two clearly labeled sections:
-          ANALYSIS: (detailed analysis)
-          SUMMARY: (2-3 sentence summary)
-        PROMPT
-      },
-      {
-        role: "user",
-        content: <<~MSG
-          **Conflict Topic:** #{topic}
-
-          **#{user_name}'s Perspective:**
-          #{user_perspective}
-
-          **#{partner_name}'s Perspective:**
-          #{partner_perspective}
-
-          Please provide a balanced mediation analysis.
-        MSG
-      }
+      { role: "system", content: system_content },
+      { role: "user", content: user_content }
     ]
 
-    response = @client.chat(
-      parameters: {
-        model: MODEL,
-        messages: messages,
-        temperature: 0.6,
-        max_tokens: 1500
-      }
+    response = chat_with_retry(
+      messages: messages,
+      temperature: 0.6,
+      max_tokens: 1500
     )
 
     reply = extract_reply(response)
@@ -65,12 +98,19 @@ class GeminiService
   end
 
   # AI Conversation Rewrite — rewrites messages to be calmer
-  def rewrite_message(original_message)
+  def rewrite_message(original_message, language: "english")
+    lang_instruction = if language == "hindi"
+      "You MUST write the rewritten message in Hindi (Devanagari script). The tone analysis JSON values should remain in English."
+    else
+      "Write the rewritten message in English."
+    end
+
     messages = [
       {
         role: "system",
         content: <<~PROMPT
           You are an expert in emotionally intelligent communication for couples.
+          #{lang_instruction}
           When given a message, provide:
           1. A rewritten version that is calmer, more respectful, and uses "I" statements while preserving the core intent
           2. A tone analysis in JSON format
@@ -85,13 +125,10 @@ class GeminiService
         content: "Please rewrite this message to be more constructive:\n\n\"#{original_message}\""
       }
     ]
-    response = @client.chat(
-      parameters: {
-        model: MODEL,
-        messages: messages,
-        temperature: 0.5,
-        max_tokens: 800
-      }
+    response = chat_with_retry(
+      messages: messages,
+      temperature: 0.5,
+      max_tokens: 800
     )
 
     reply = extract_reply(response)
@@ -99,6 +136,30 @@ class GeminiService
   end
 
   private
+
+  def chat_with_retry(messages:, temperature:, max_tokens:)
+    retries = 0
+    begin
+      @client.chat(
+        parameters: {
+          model: MODEL,
+          messages: messages,
+          temperature: temperature,
+          max_tokens: max_tokens
+        }
+      )
+    rescue Faraday::TooManyRequestsError => e
+      retries += 1
+      if retries <= MAX_RETRIES
+        sleep_time = 2 ** retries
+        Rails.logger.warn("Gemini 429 rate limit hit. Retrying in #{sleep_time}s (attempt #{retries}/#{MAX_RETRIES})")
+        sleep(sleep_time)
+        retry
+      else
+        raise e
+      end
+    end
+  end
 
   def extract_reply(response)
     response.dig("choices", 0, "message", "content") || "I'm sorry, I couldn't generate a response. Please try again."

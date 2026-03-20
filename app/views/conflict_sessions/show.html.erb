@@ -33,6 +33,21 @@
     </div>
   </div>
 
+  <!-- Uploaded Chat Screenshots -->
+  <% if @conflict_session.chat_screenshots.attached? %>
+    <div class="glass-card-static p-4 mt-4">
+      <h5 class="fw-bold mb-3"><i class="bi bi-chat-dots-fill me-2" style="color: #6C63FF;"></i>Chat Screenshots</h5>
+      <div class="d-flex flex-wrap gap-3">
+        <% @conflict_session.chat_screenshots.each do |screenshot| %>
+          <div style="border: 2px solid rgba(108, 99, 255, 0.3); border-radius: 8px; overflow: hidden;">
+            <%= image_tag(screenshot, style: 'max-width: 200px; max-height: 300px; object-fit: contain;') %>
+          </div>
+        <% end %>
+      </div>
+      <div class="form-text mt-2" style="color: #aaa;">These screenshots will be analyzed by AI along with the written perspectives.</div>
+    </div>
+  <% end %>
+
   <!-- AI Analysis -->
   <% if @conflict_session.completed? %>
     <div class="glass-card-static p-4 mt-4" style="border-color: rgba(46, 204, 113, 0.3);">
@@ -45,10 +60,19 @@
         <p class="mb-0"><%= @conflict_session.ai_summary %></p>
       </div>
     </div>
-  <% elsif @conflict_session.partner_perspective.present? %>
+  <% elsif @conflict_session.partner_perspective.present? || @conflict_session.chat_screenshots.attached? %>
     <div class="text-center mt-4">
-      <%= button_to analyze_conflict_session_path(@conflict_session), method: :post, class: 'btn btn-gradient btn-lg', data: { turbo: false } do %>
-        <span><i class="bi bi-magic me-1"></i> Generate AI Analysis</span>
+      <%= form_tag(analyze_conflict_session_path(@conflict_session), method: :post, data: { turbo: false }) do %>
+        <div class="mb-3">
+          <label class="form-label" style="color: #ccc;">Select Language / भाषा चुनें</label>
+          <select name="language" class="form-select" style="max-width: 300px; margin: 0 auto;">
+            <option value="english">English</option>
+            <option value="hindi">हिन्दी (Hindi)</option>
+          </select>
+        </div>
+        <button type="submit" class="btn btn-gradient btn-lg">
+          <span><i class="bi bi-magic me-1"></i> Generate AI Analysis</span>
+        </button>
       <% end %>
     </div>
   <% end %>

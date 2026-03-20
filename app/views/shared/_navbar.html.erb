@@ -11,47 +11,68 @@
     <div class="collapse navbar-collapse" id="navbarNav">
       <% if user_signed_in? %>
         <ul class="navbar-nav me-auto">
-          <li class="nav-item">
-            <%= link_to 'Dashboard', dashboard_path, class: "nav-link #{controller_name == 'dashboard' ? 'active' : ''}" %>
-          </li>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-              AI Tools
-            </a>
-            <ul class="dropdown-menu dropdown-menu-dark">
-              <li><%= link_to '🤖 AI Assistant', conversations_path, class: 'dropdown-item' %></li>
-              <li><%= link_to '⚖️ Conflict Mediator', conflict_sessions_path, class: 'dropdown-item' %></li>
-              <li><%= link_to '✏️ Message Rewriter', rewrite_path, class: 'dropdown-item' %></li>
-            </ul>
-          </li>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-              Analytics
-            </a>
-            <ul class="dropdown-menu dropdown-menu-dark">
-              <li><%= link_to '📊 Health Dashboard', health_path, class: 'dropdown-item' %></li>
-              <li><%= link_to '💕 Compatibility', compatibility_assessments_path, class: 'dropdown-item' %></li>
-            </ul>
-          </li>
-          <li class="nav-item">
-            <%= link_to 'Therapists', therapists_path, class: "nav-link #{controller_name == 'therapists' ? 'active' : ''}" %>
-          </li>
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-              More
-            </a>
-            <ul class="dropdown-menu dropdown-menu-dark">
-              <li><%= link_to '💰 Finances', expenses_path, class: 'dropdown-item' %></li>
-              <li><%= link_to '💝 Memories', memories_path, class: 'dropdown-item' %></li>
-              <li><%= link_to '📚 Programs', programs_path, class: 'dropdown-item' %></li>
-              <li><%= link_to '🎯 Workshops', workshops_path, class: 'dropdown-item' %></li>
-              <li><hr class="dropdown-divider"></li>
-              <li><%= link_to '📅 My Bookings', bookings_path, class: 'dropdown-item' %></li>
-            </ul>
-          </li>
-          <% if current_user.admin? %>
+          <% if current_user.therapist? %>
+            <!-- Therapist Navigation -->
             <li class="nav-item">
-              <%= link_to 'Admin', admin_dashboard_path, class: 'nav-link text-warning' %>
+              <%= link_to 'Dashboard', therapist_dashboard_path, class: 'nav-link active' %>
+            </li>
+            <li class="nav-item">
+              <%= link_to 'My Profile', edit_therapist_profile_path, class: 'nav-link' %>
+            </li>
+          <% elsif current_user.admin? %>
+            <!-- Admin Navigation -->
+            <li class="nav-item">
+              <%= link_to 'Admin Dashboard', admin_dashboard_path, class: 'nav-link text-warning' %>
+            </li>
+            <li class="nav-item">
+              <%= link_to 'Applications', admin_therapist_applications_path, class: 'nav-link text-warning' %>
+            </li>
+          <% elsif current_user.therapist_application&.submitted? %>
+            <!-- Pending Therapist Navigation -->
+            <li class="nav-item">
+              <span class="nav-link" style="color: #F39C12;">⏳ Application Pending</span>
+            </li>
+          <% else %>
+            <!-- Couple Member Navigation -->
+            <li class="nav-item">
+              <%= link_to 'Dashboard', dashboard_path, class: "nav-link #{controller_name == 'dashboard' ? 'active' : ''}" %>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                AI Tools
+              </a>
+              <ul class="dropdown-menu dropdown-menu-dark">
+                <li><%= link_to '🤖 AI Assistant', conversations_path, class: 'dropdown-item' %></li>
+                <li><%= link_to '⚖️ Conflict Mediator', conflict_sessions_path, class: 'dropdown-item' %></li>
+                <li><%= link_to '✏️ Message Rewriter', rewrite_path, class: 'dropdown-item' %></li>
+              </ul>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                Analytics
+              </a>
+              <ul class="dropdown-menu dropdown-menu-dark">
+                <li><%= link_to '📊 Health Dashboard', health_path, class: 'dropdown-item' %></li>
+                <li><%= link_to '💕 Compatibility', compatibility_assessments_path, class: 'dropdown-item' %></li>
+              </ul>
+            </li>
+            <li class="nav-item">
+              <%= link_to 'Therapists', therapists_path, class: "nav-link #{controller_name == 'therapists' ? 'active' : ''}" %>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
+                More
+              </a>
+              <ul class="dropdown-menu dropdown-menu-dark">
+                <li><%= link_to '💰 Finances', expenses_path, class: 'dropdown-item' %></li>
+                <li><%= link_to '💝 Memories', memories_path, class: 'dropdown-item' %></li>
+                <li><%= link_to '📚 Programs', programs_path, class: 'dropdown-item' %></li>
+                <li><%= link_to '🎯 Workshops', workshops_path, class: 'dropdown-item' %></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><%= link_to '📅 My Bookings', bookings_path, class: 'dropdown-item' %></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><%= link_to '🩺 Become a Therapist', new_therapist_application_path, class: 'dropdown-item' %></li>
+              </ul>
             </li>
           <% end %>
         </ul>
@@ -64,7 +85,7 @@
             <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end">
               <li><span class="dropdown-item-text text-muted small"><%= current_user.email %></span></li>
               <li><hr class="dropdown-divider"></li>
-              <li><%= link_to 'Sign Out', destroy_user_session_path, method: :delete, class: 'dropdown-item' %></li>
+              <li><%= button_to 'Sign Out', destroy_user_session_path, method: :delete, class: 'dropdown-item', form: { class: 'd-inline' } %></li>
             </ul>
           </li>
         </ul>

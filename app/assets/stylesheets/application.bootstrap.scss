@@ -16,7 +16,7 @@ $cl-gradient-start: #6C63FF;
 $cl-gradient-end: #FF6B9D;
 $cl-bg-dark: #0F0E17;
 $cl-bg-card: #1A1A2E;
-$cl-text-muted: #A0A0B8;
+$cl-text-muted: #C8C8DA;
 $cl-border: rgba(108, 99, 255, 0.15);
 $cl-glow: rgba(108, 99, 255, 0.3);
 
@@ -379,7 +379,7 @@ body {
 }
 
 .form-label {
-  color: #C0C0D0;
+  color: #DDDDE8;
   font-weight: 500;
   font-size: 0.9rem;
   margin-bottom: 0.4rem;
@@ -531,7 +531,7 @@ body {
   --bs-table-bg: transparent;
   --bs-table-striped-bg: rgba(108, 99, 255, 0.05);
   --bs-table-hover-bg: rgba(108, 99, 255, 0.08);
-  color: #E4E4F0;
+  color: #F0F0FA;
   border-color: $cl-border;
 
   th {
@@ -539,17 +539,22 @@ body {
     font-size: 0.85rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
-    color: $cl-text-muted;
+    color: #D0D0E0;
     border-color: $cl-border;
   }
 
   td {
     border-color: $cl-border;
     vertical-align: middle;
+    color: #E8E8F4;
   }
 }
 
 // === ALERT TOASTS ===
+.text-muted {
+  color: #C8C8DA !important;
+}
+
 .alert {
   border-radius: $border-radius;
   border: none;

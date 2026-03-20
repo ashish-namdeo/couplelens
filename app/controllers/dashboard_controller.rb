@@ -2,6 +2,15 @@ class DashboardController < ApplicationController
   before_action :authenticate_user!
 
   def show
+    return redirect_to admin_dashboard_path if current_user.admin?
+    return redirect_to therapist_dashboard_path if current_user.therapist?
+
+    # Pending therapist applicant — show waiting page
+    if current_user.therapist_application&.submitted?
+      @application = current_user.therapist_application
+      return render 'dashboard/therapist_pending'
+    end
+
     @recent_conversations = current_user.conversations.order(updated_at: :desc).limit(3)
     @health_metrics = current_user.health_metrics.recent.limit(10)
     @upcoming_bookings = current_user.bookings.upcoming.limit(3)

@@ -1,0 +1,123 @@
+<div class="container py-4" style="max-width: 700px;">
+  <div class="text-center mb-4">
+    <h2 class="fw-bold">🩺 Sign Up as a <span class="gradient-text">Therapist</span></h2>
+    <p style="color: #aaa;">Create your account and apply to join our therapist marketplace</p>
+  </div>
+
+  <div class="glass-card-static">
+    <div class="p-4">
+      <%= form_for(@user, url: therapist_registration_path, method: :post) do |f| %>
+        <% if @user.errors.any? %>
+          <div class="alert alert-danger">
+            <% @user.errors.full_messages.each do |msg| %>
+              <div class="small"><%= msg %></div>
+            <% end %>
+          </div>
+        <% end %>
+
+        <!-- Account Details -->
+        <h5 class="fw-bold mb-3" style="color: #FF6B9D;">1. Account Details</h5>
+        <div class="row g-3 mb-4">
+          <div class="col-6">
+            <div class="mb-3">
+              <%= f.label :first_name, class: 'form-label' %>
+              <%= f.text_field :first_name, class: 'form-control', placeholder: 'Dr. Jane' %>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="mb-3">
+              <%= f.label :last_name, class: 'form-label' %>
+              <%= f.text_field :last_name, class: 'form-control', placeholder: 'Smith' %>
+            </div>
+          </div>
+          <div class="col-12">
+            <div class="mb-3">
+              <%= f.label :email, 'Login Email', class: 'form-label' %>
+              <%= f.email_field :email, class: 'form-control', placeholder: 'your@email.com' %>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="mb-3">
+              <%= f.label :password, class: 'form-label' %>
+              <%= f.password_field :password, class: 'form-control', placeholder: 'Min 6 characters' %>
+            </div>
+          </div>
+          <div class="col-6">
+            <div class="mb-3">
+              <%= f.label :password_confirmation, 'Confirm Password', class: 'form-label' %>
+              <%= f.password_field :password_confirmation, class: 'form-control', placeholder: 'Confirm' %>
+            </div>
+          </div>
+        </div>
+
+        <!-- Professional Details -->
+        <h5 class="fw-bold mb-3" style="color: #FF6B9D;">2. Professional Details</h5>
+        <div class="row g-3 mb-4">
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label class="form-label">Professional Email</label>
+              <input type="email" name="therapist_email" class="form-control" placeholder="jane@therapy.com">
+              <small style="color: #888;">For client communications (optional)</small>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label class="form-label">Specialization</label>
+              <select name="specialization" class="form-select" required>
+                <option value="">Select specialization</option>
+                <% TherapistProfile::SPECIALIZATIONS.each do |spec| %>
+                  <option value="<%= spec %>"><%= spec %></option>
+                <% end %>
+              </select>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label class="form-label">Years of Experience</label>
+              <input type="number" name="years_experience" class="form-control" min="0" placeholder="e.g. 5" required>
+            </div>
+          </div>
+          <div class="col-md-6">
+            <div class="mb-3">
+              <label class="form-label">Hourly Rate ($)</label>
+              <input type="number" name="hourly_rate" class="form-control" step="5" min="0" placeholder="e.g. 150" required>
+            </div>
+          </div>
+          <div class="col-12">
+            <div class="mb-3">
+              <label class="form-label">Professional Bio</label>
+              <textarea name="bio" class="form-control" rows="4" placeholder="Tell us about your experience, approach, and what makes you passionate about helping couples..." required></textarea>
+            </div>
+          </div>
+          <div class="col-12">
+            <div class="mb-3">
+              <label class="form-label">Certifications & Licenses</label>
+              <textarea name="certifications" class="form-control" rows="3" placeholder="e.g. Licensed Marriage and Family Therapist (LMFT), PhD in Clinical Psychology..." required></textarea>
+            </div>
+          </div>
+        </div>
+
+        <div class="p-3 mb-3 rounded" style="background: rgba(255, 107, 157, 0.1); border: 1px solid rgba(255, 107, 157, 0.3);">
+          <small style="color: #ccc;">
+            <strong>Note:</strong> Your application will be reviewed by our admin team. Once approved, your profile will appear in the therapist marketplace and clients can book sessions with you.
+          </small>
+        </div>
+
+        <div class="mb-3">
+          <%= f.submit "Create Account & Submit Application", class: 'btn btn-gradient w-100 btn-lg' %>
+        </div>
+      <% end %>
+
+      <div class="text-center mt-3">
+        <p style="color: #aaa;" class="small">
+          Want to sign up as a couple instead?
+          <%= link_to "Sign up here", new_user_registration_path, class: 'text-decoration-none gradient-text' %>
+        </p>
+        <p style="color: #aaa;" class="small">
+          Already have an account?
+          <%= link_to "Sign in", new_user_session_path, class: 'text-decoration-none gradient-text' %>
+        </p>
+      </div>
+    </div>
+  </div>
+</div>

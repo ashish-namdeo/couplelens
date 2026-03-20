@@ -42,7 +42,7 @@ class ConversationsController < ApplicationController
   end
 
   def conversation_params
-    params.require(:conversation).permit(:title, :persona)
+    params.require(:conversation).permit(:title, :persona, :language)
   end
 
   def persona_system_prompt(persona)

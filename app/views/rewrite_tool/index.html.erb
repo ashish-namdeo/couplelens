@@ -7,9 +7,16 @@
   <%= form_tag(rewrite_path, method: :post, class: 'animate-fade-in', data: { turbo: false }) do %>
     <div class="glass-card-static p-4 mb-4">
       <div class="mb-3">
+        <label class="form-label">Select Language / भाषा चुनें</label>
+        <select name="language" class="form-select mb-3">
+          <option value="english" <%= 'selected' if @language.to_s != 'hindi' %>>English</option>
+          <option value="hindi" <%= 'selected' if @language.to_s == 'hindi' %>>हिन्दी (Hindi)</option>
+        </select>
+      </div>
+      <div class="mb-3">
         <label class="form-label">Your Original Message</label>
-        <textarea name="original_message" class="form-control" rows="4" placeholder="Paste or type the message you want to rewrite..."><%= @original %></textarea>
-        <div class="form-text" style="color: #aaa;">Write the message as you naturally would. Our AI will make it calmer and more constructive.</div>
+        <textarea name="original_message" class="form-control" rows="4" placeholder="Paste or type the message you want to rewrite... / अपना संदेश यहाँ लिखें..."><%= @original %></textarea>
+        <div class="form-text" style="color: #aaa;">Write the message as you naturally would in your chosen language. Our AI will rewrite it in the same language.</div>
       </div>
       <button type="submit" class="btn btn-gradient">
         <span><i class="bi bi-magic me-1"></i> Rewrite Message</span>

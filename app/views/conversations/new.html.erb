@@ -48,6 +48,26 @@
       </div>
     </div>
 
+    <div class="glass-card-static p-4 mb-4">
+      <label class="form-label">Select Language / भाषा चुनें</label>
+      <div class="row g-3">
+        <div class="col-md-6 col-6">
+          <label class="persona-card d-block">
+            <%= f.radio_button :language, 'english', checked: true, class: 'd-none' %>
+            <div class="persona-emoji">🇬🇧</div>
+            <h5>English</h5>
+          </label>
+        </div>
+        <div class="col-md-6 col-6">
+          <label class="persona-card d-block">
+            <%= f.radio_button :language, 'hindi', class: 'd-none' %>
+            <div class="persona-emoji">🇮🇳</div>
+            <h5>हिन्दी (Hindi)</h5>
+          </label>
+        </div>
+      </div>
+    </div>
+
     <div class="d-flex gap-3">
       <%= f.submit 'Start Conversation', class: 'btn btn-gradient btn-lg' %>
       <%= link_to 'Cancel', conversations_path, class: 'btn btn-outline-glass btn-lg' %>

@@ -27,7 +27,7 @@ class MessagesController < ApplicationController
     end
 
     gemini = GeminiService.new
-    response = gemini.chat(chat_messages)
+    response = gemini.chat(chat_messages, language: conversation.language || 'english')
 
     conversation.messages.create!(
       role: 'assistant',

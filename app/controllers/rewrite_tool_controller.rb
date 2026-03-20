@@ -13,7 +13,8 @@ class RewriteToolController < ApplicationController
     end
 
     @original = original_message
-    @rewritten = generate_rewrite(original_message)
+    @language = params[:language] || 'english'
+    @rewritten = generate_rewrite(original_message, @language)
     @tone_analysis = analyze_tone(original_message)
 
     render :index
@@ -21,9 +22,9 @@ class RewriteToolController < ApplicationController
 
   private
 
-  def generate_rewrite(message)
+  def generate_rewrite(message, language = 'english')
     gemini = GeminiService.new
-    result = gemini.rewrite_message(message)
+    result = gemini.rewrite_message(message, language: language)
     @tone_analysis = result[:tone_analysis]
     result[:rewritten]
   rescue StandardError => e

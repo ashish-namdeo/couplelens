@@ -62,6 +62,16 @@ Rails.application.routes.draw do
   # Therapist Application (public)
   resources :therapist_applications, only: [:new, :create]
 
+  # Therapist Registration (signup + apply in one step)
+  get 'therapist_signup', to: 'therapist_registrations#new', as: :therapist_registration
+  post 'therapist_signup', to: 'therapist_registrations#create'
+
+  # Therapist Portal
+  namespace :therapist do
+    get 'dashboard', to: 'dashboard#show'
+    resource :profile, only: [:edit, :update]
+  end
+
   # Admin
   namespace :admin do
     get 'dashboard', to: 'dashboard#show'

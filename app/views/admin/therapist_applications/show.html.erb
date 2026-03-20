@@ -19,10 +19,10 @@
 
   <% if @application.submitted? %>
     <div class="d-flex gap-3">
-      <%= link_to approve_admin_therapist_application_path(@application), method: :post, data: { confirm: 'Approve?' }, class: 'btn btn-success btn-lg' do %>
+      <%= button_to approve_admin_therapist_application_path(@application), method: :post, form: { data: { turbo_confirm: 'Approve this therapist?' } }, class: 'btn btn-success btn-lg' do %>
         <i class="bi bi-check-lg me-1"></i> Approve
       <% end %>
-      <%= link_to reject_admin_therapist_application_path(@application), method: :post, data: { confirm: 'Reject?' }, class: 'btn btn-danger btn-lg' do %>
+      <%= button_to reject_admin_therapist_application_path(@application), method: :post, form: { data: { turbo_confirm: 'Reject this application?' } }, class: 'btn btn-danger btn-lg' do %>
         <i class="bi bi-x-lg me-1"></i> Reject
       <% end %>
     </div>

@@ -1,0 +1,42 @@
+<div class="container py-4" style="max-width: 700px;">
+  <div class="page-header">
+    <h1>✏️ Edit <span class="gradient-text">Profile</span></h1>
+    <p>Update your therapist profile information</p>
+  </div>
+
+  <%= form_with(model: @profile, url: therapist_profile_path, method: :patch, class: 'animate-fade-in') do |f| %>
+    <div class="glass-card-static p-4">
+      <div class="row g-3">
+        <div class="col-md-6">
+          <div class="mb-3">
+            <%= f.label :specialization, class: 'form-label' %>
+            <%= f.select :specialization, TherapistProfile::SPECIALIZATIONS, {}, class: 'form-select' %>
+          </div>
+        </div>
+        <div class="col-md-6">
+          <div class="mb-3">
+            <%= f.label :hourly_rate, 'Hourly Rate ($)', class: 'form-label' %>
+            <%= f.number_field :hourly_rate, class: 'form-control', step: 5, min: 0 %>
+          </div>
+        </div>
+        <div class="col-12">
+          <div class="mb-3">
+            <%= f.label :bio, 'Professional Bio', class: 'form-label' %>
+            <%= f.text_area :bio, class: 'form-control', rows: 5 %>
+          </div>
+        </div>
+        <div class="col-12">
+          <div class="mb-3">
+            <%= f.label :certifications, class: 'form-label' %>
+            <%= f.text_area :certifications, class: 'form-control', rows: 3 %>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex gap-3 mt-3">
+        <%= f.submit 'Update Profile', class: 'btn btn-gradient btn-lg' %>
+        <%= link_to 'Cancel', therapist_dashboard_path, class: 'btn btn-outline-glass btn-lg' %>
+      </div>
+    </div>
+  <% end %>
+</div>
