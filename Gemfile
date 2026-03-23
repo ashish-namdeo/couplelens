@@ -62,6 +62,10 @@ gem "redis"
 gem "ruby-openai"
 gem "dotenv-rails", groups: [:development, :test]
 
+# Messaging Platform Integrations
+gem "telegram-bot-ruby"
+gem "httparty"
+
 # Charts & Analytics
 gem "chartkick"
 gem "groupdate"

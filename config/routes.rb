@@ -75,11 +75,26 @@ Rails.application.routes.draw do
   # Admin
   namespace :admin do
     get 'dashboard', to: 'dashboard#show'
+    get 'messaging_setup', to: 'messaging_setup#show'
+    post 'messaging_setup/set_telegram_webhook', to: 'messaging_setup#set_telegram_webhook', as: :set_telegram_webhook
+    get 'messaging_setup/telegram_webhook_info', to: 'messaging_setup#telegram_webhook_info', as: :telegram_webhook_info
     resources :therapist_applications, only: [:index, :show] do
       member do
         post :approve
         post :reject
       end
+    end
+  end
+
+  # Messaging Platform Webhooks (API)
+  namespace :api do
+    namespace :v1 do
+      # Telegram
+      post 'webhooks/telegram/:token', to: 'telegram_webhook#receive', as: :telegram_webhook
+
+      # WhatsApp
+      get  'webhooks/whatsapp', to: 'whatsapp_webhook#verify'
+      post 'webhooks/whatsapp', to: 'whatsapp_webhook#receive'
     end
   end
 end

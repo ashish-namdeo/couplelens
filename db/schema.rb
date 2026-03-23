@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2026_03_19_103822) do
+ActiveRecord::Schema[7.0].define(version: 2026_03_20_074726) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -231,8 +231,12 @@ ActiveRecord::Schema[7.0].define(version: 2026_03_19_103822) do
     t.integer "partner_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "telegram_id"
+    t.string "whatsapp_id"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
+    t.index ["telegram_id"], name: "index_users_on_telegram_id", unique: true, where: "(telegram_id IS NOT NULL)"
+    t.index ["whatsapp_id"], name: "index_users_on_whatsapp_id", unique: true, where: "(whatsapp_id IS NOT NULL)"
   end
 
   create_table "workshop_registrations", force: :cascade do |t|
