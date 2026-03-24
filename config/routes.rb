@@ -6,6 +6,7 @@ Rails.application.routes.draw do
 
   # Dashboard
   get 'dashboard', to: 'dashboard#show'
+  post 'dashboard/generate_bot_link_code', to: 'dashboard#generate_bot_link_code', as: :generate_bot_link_code
 
   # AI Relationship Assistant
   resources :conversations, only: [:index, :show, :new, :create, :destroy] do

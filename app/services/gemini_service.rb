@@ -46,14 +46,16 @@ class GeminiService
       #{lang_instruction}
       #{screenshot_instruction}
       Provide:
-      1. A detailed analysis of both perspectives, identifying underlying emotions and needs
+      1. A detailed analysis of BOTH perspectives equally, identifying underlying emotions and needs for each partner
       2. Common ground between the partners
       3. Specific, actionable recommendations for resolution
       #{"4. If chat screenshots are provided, analyze the communication patterns, tone, and key moments in the conversation that contributed to the conflict." if images.any?}
 
-      Format your response in two clearly labeled sections:
-      ANALYSIS: (detailed analysis)
-      SUMMARY: (2-3 sentence summary)
+      IMPORTANT: You MUST complete the analysis for BOTH partners fully before writing the summary.
+
+      Format your response in two clearly labeled sections (ALWAYS use these exact English labels, even if writing in Hindi):
+      ANALYSIS: (detailed analysis covering both partners equally)
+      SUMMARY: (a separate 2-3 sentence overall summary with key takeaway and recommendation)
     PROMPT
 
     # Build user message content (text + images)
@@ -90,7 +92,7 @@ class GeminiService
     response = chat_with_retry(
       messages: messages,
       temperature: 0.6,
-      max_tokens: 1500
+      max_tokens: 3000
     )
 
     reply = extract_reply(response)
@@ -166,13 +168,25 @@ class GeminiService
   end
 
   def parse_mediation(reply)
-    if reply.include?("SUMMARY:")
+    # Try multiple possible labels (English, Hindi, markdown variations)
+    summary_pattern = /\b(SUMMARY|Summary|सारांश|विश्लेषण सारांश)\s*[:：]/i
+    analysis_pattern = /\b(ANALYSIS|Analysis|विश्लेषण)\s*[:：]/i
+
+    if reply.match?(summary_pattern)
+      parts = reply.split(summary_pattern)
+      # Analysis is everything before the summary label
+      analysis = parts[0].sub(analysis_pattern, "").strip
+      # Summary is the last part after splitting
+      summary = parts.last.strip
+    elsif reply.include?("SUMMARY:")
       parts = reply.split("SUMMARY:")
       analysis = parts[0].sub("ANALYSIS:", "").strip
       summary = parts[1].strip
     else
-      analysis = reply
-      summary = reply.first(200)
+      # Fallback: use full reply as analysis, generate a short summary from first paragraph
+      analysis = reply.sub(analysis_pattern, "").strip
+      paragraphs = analysis.split("\n\n").reject(&:blank?)
+      summary = paragraphs.length > 1 ? paragraphs.last.first(300) : analysis.first(300)
     end
     { analysis: analysis, summary: summary }
   end

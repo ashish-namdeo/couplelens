@@ -92,6 +92,51 @@
 
     <!-- Sidebar -->
     <div class="col-lg-4">
+      <!-- Link Bot Account -->
+      <div class="glass-card-static p-4 mb-4">
+        <h5 class="fw-bold mb-3"><i class="bi bi-phone-fill me-2" style="color: #6C63FF;"></i>Link Bot Account</h5>
+        <% if @bot_linked %>
+          <div class="d-flex align-items-center mb-2">
+            <span class="badge bg-success me-2">Connected</span>
+            <% if current_user.whatsapp_id.present? %>
+              <span class="badge-glass me-1">📱 WhatsApp</span>
+            <% end %>
+            <% if current_user.telegram_id.present? %>
+              <span class="badge-glass">✈️ Telegram</span>
+            <% end %>
+          </div>
+          <p class="text-muted small mb-2">Your bot account is linked. You can use CoupleLens via messaging apps.</p>
+          <button class="btn btn-sm btn-outline-glass w-100" id="generate-link-code-btn" onclick="generateLinkCode()">
+            🔗 Generate New Link Code
+          </button>
+          <div id="link-code-display" class="mt-2" style="display: none;">
+            <div class="glass-card p-3 text-center">
+              <div class="text-muted small">Your link code:</div>
+              <div class="fw-bold gradient-text" style="font-size: 1.5rem; letter-spacing: 2px;" id="link-code-value"></div>
+              <div class="text-muted" style="font-size: 0.75rem;">Expires in 30 minutes</div>
+              <div class="text-muted small mt-1">Send <code>/link CODE</code> on WhatsApp or Telegram</div>
+            </div>
+          </div>
+        <% else %>
+          <p class="text-muted small mb-2">Connect your WhatsApp or Telegram to use CoupleLens as a chatbot.</p>
+          <button class="btn btn-sm btn-outline-glass w-100" id="generate-link-code-btn" onclick="generateLinkCode()">
+            🔗 Generate Link Code
+          </button>
+          <div id="link-code-display" class="mt-2" style="display: none;">
+            <div class="glass-card p-3 text-center">
+              <div class="text-muted small">Your link code:</div>
+              <div class="fw-bold gradient-text" style="font-size: 1.5rem; letter-spacing: 2px;" id="link-code-value"></div>
+              <div class="text-muted" style="font-size: 0.75rem;">Expires in 30 minutes</div>
+              <div class="text-muted small mt-2">
+                <strong>Steps:</strong><br>
+                1. Message the CoupleLens bot on WhatsApp/Telegram<br>
+                2. Send: <code>/link <span id="link-code-copy"></span></code>
+              </div>
+            </div>
+          </div>
+        <% end %>
+      </div>
+
       <!-- Upcoming Bookings -->
       <div class="glass-card-static p-4 mb-4">
         <h5 class="fw-bold mb-3"><i class="bi bi-calendar-check-fill me-2" style="color: #FF6B9D;"></i>Upcoming Sessions</h5>
@@ -148,3 +193,32 @@
     </div>
   </div>
 </div>
+
+<script>
+  function generateLinkCode() {
+    var btn = document.getElementById('generate-link-code-btn');
+    btn.disabled = true;
+    btn.textContent = 'Generating...';
+
+    fetch('<%= generate_bot_link_code_path %>', {
+      method: 'POST',
+      headers: {
+        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
+        'Accept': 'application/json'
+      }
+    })
+    .then(function(response) { return response.json(); })
+    .then(function(data) {
+      document.getElementById('link-code-value').textContent = data.code;
+      var copyEl = document.getElementById('link-code-copy');
+      if (copyEl) copyEl.textContent = data.code;
+      document.getElementById('link-code-display').style.display = 'block';
+      btn.textContent = '🔄 Regenerate Code';
+      btn.disabled = false;
+    })
+    .catch(function() {
+      btn.textContent = '❌ Error. Try again.';
+      btn.disabled = false;
+    });
+  }
+</script>

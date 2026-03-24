@@ -38,6 +38,27 @@ module Api
         phone_number_id = value.dig("metadata", "phone_number_id")
         bot_service = MessagingBotService.new(platform: :whatsapp)
 
+        # Handle interactive button replies
+        if message["type"] == "interactive"
+          interactive = message["interactive"]
+          text = if interactive["type"] == "button_reply"
+            interactive.dig("button_reply", "id") || ""
+          elsif interactive["type"] == "list_reply"
+            interactive.dig("list_reply", "id") || ""
+          else
+            ""
+          end
+
+          result = bot_service.process_message(
+            platform_user_id: from,
+            text: text,
+            user_name: contact_name
+          )
+
+          send_whatsapp_response(from, result, phone_number_id)
+          return render_success
+        end
+
         # Handle image messages (screenshots for conflict mediator)
         if message["type"] == "image"
           image_id = message.dig("image", "id")
@@ -55,7 +76,7 @@ module Api
             reply = "Sorry, I couldn't download that image. Please try again."
           end
 
-          send_whatsapp_message(from, reply, phone_number_id)
+          send_whatsapp_response(from, reply, phone_number_id)
           return render_success
         end
 
@@ -92,7 +113,7 @@ module Api
             reply = "I can process image files (JPG, PNG) and .txt files. Please send a supported file type."
           end
 
-          send_whatsapp_message(from, reply, phone_number_id)
+          send_whatsapp_response(from, reply, phone_number_id)
           return render_success
         end
 
@@ -100,13 +121,13 @@ module Api
         return render_success unless message["type"] == "text"
 
         text = message.dig("text", "body")
-        reply = bot_service.process_message(
+        result = bot_service.process_message(
           platform_user_id: from,
           text: text,
           user_name: contact_name
         )
 
-        send_whatsapp_message(from, reply, phone_number_id)
+        send_whatsapp_response(from, result, phone_number_id)
         render_success
       rescue StandardError => e
         Rails.logger.error("WhatsApp webhook error: #{e.message}")
@@ -117,6 +138,22 @@ module Api
 
       def whatsapp_verify_token
         Rails.application.config.whatsapp_verify_token.to_s
+      end
+
+      # Smart response: sends interactive messages (buttons/lists) or plain text
+      def send_whatsapp_response(to, result, phone_number_id)
+        if result.is_a?(Hash) && result[:type]
+          case result[:type]
+          when :buttons
+            send_whatsapp_buttons(to, result[:body], result[:buttons], phone_number_id, header: result[:header], footer: result[:footer])
+          when :list
+            send_whatsapp_list(to, result[:body], result[:button_text], result[:sections], phone_number_id, header: result[:header], footer: result[:footer])
+          else
+            send_whatsapp_message(to, result[:body] || result.to_s, phone_number_id)
+          end
+        else
+          send_whatsapp_message(to, result.to_s, phone_number_id)
+        end
       end
 
       def send_whatsapp_message(to, text, phone_number_id)
@@ -144,6 +181,96 @@ module Api
         end
       rescue StandardError => e
         Rails.logger.error("WhatsApp send error: #{e.message}")
+      end
+
+      # Send interactive buttons (max 3 buttons)
+      def send_whatsapp_buttons(to, body_text, buttons, phone_number_id, header: nil, footer: nil)
+        token = Rails.application.config.whatsapp_access_token
+        url = "https://graph.facebook.com/v22.0/#{phone_number_id}/messages"
+
+        interactive = {
+          type: "button",
+          body: { text: body_text },
+          action: {
+            buttons: buttons.first(3).map do |btn|
+              {
+                type: "reply",
+                reply: { id: btn[:id], title: btn[:title].first(20) }
+              }
+            end
+          }
+        }
+        interactive[:header] = { type: "text", text: header } if header
+        interactive[:footer] = { text: footer } if footer
+
+        response = HTTParty.post(url,
+          headers: {
+            "Authorization" => "Bearer #{token}",
+            "Content-Type" => "application/json"
+          },
+          body: {
+            messaging_product: "whatsapp",
+            to: to,
+            type: "interactive",
+            interactive: interactive
+          }.to_json
+        )
+
+        result = JSON.parse(response.body)
+        if result["error"]
+          Rails.logger.error("WhatsApp buttons error: #{result['error']['message']}")
+          # Fallback to plain text
+          send_whatsapp_message(to, body_text, phone_number_id)
+        end
+      rescue StandardError => e
+        Rails.logger.error("WhatsApp buttons error: #{e.message}")
+        send_whatsapp_message(to, body_text, phone_number_id)
+      end
+
+      # Send interactive list menu (up to 10 items)
+      def send_whatsapp_list(to, body_text, button_text, sections, phone_number_id, header: nil, footer: nil)
+        token = Rails.application.config.whatsapp_access_token
+        url = "https://graph.facebook.com/v22.0/#{phone_number_id}/messages"
+
+        interactive = {
+          type: "list",
+          body: { text: body_text },
+          action: {
+            button: button_text.first(20),
+            sections: sections.map do |section|
+              {
+                title: section[:title],
+                rows: section[:rows].map do |row|
+                  { id: row[:id], title: row[:title].first(24), description: row[:description]&.first(72) }.compact
+                end
+              }
+            end
+          }
+        }
+        interactive[:header] = { type: "text", text: header } if header
+        interactive[:footer] = { text: footer } if footer
+
+        response = HTTParty.post(url,
+          headers: {
+            "Authorization" => "Bearer #{token}",
+            "Content-Type" => "application/json"
+          },
+          body: {
+            messaging_product: "whatsapp",
+            to: to,
+            type: "interactive",
+            interactive: interactive
+          }.to_json
+        )
+
+        result = JSON.parse(response.body)
+        if result["error"]
+          Rails.logger.error("WhatsApp list error: #{result['error']['message']}")
+          send_whatsapp_message(to, body_text, phone_number_id)
+        end
+      rescue StandardError => e
+        Rails.logger.error("WhatsApp list error: #{e.message}")
+        send_whatsapp_message(to, body_text, phone_number_id)
       end
 
       def download_whatsapp_media(media_id)

@@ -22,5 +22,13 @@ class DashboardController < ApplicationController
     @total_sessions = current_user.bookings.completed.count
     @avg_health_score = current_user.health_metrics.average(:score)&.round(1) || 0
     @memories_count = current_user.memories.count
+
+    # Bot link status
+    @bot_linked = current_user.bot_linked?
+  end
+
+  def generate_bot_link_code
+    code = current_user.generate_bot_link_code!
+    render json: { code: code, expires_in: "30 minutes" }
   end
 end

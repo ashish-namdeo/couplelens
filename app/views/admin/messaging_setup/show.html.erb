@@ -1,3 +1,24 @@
+<style>
+  .messaging-setup-card .card-body h3,
+  .messaging-setup-card .card-body h5,
+  .messaging-setup-card .card-body p,
+  .messaging-setup-card .card-body li,
+  .messaging-setup-card .card-body td,
+  .messaging-setup-card .card-body th,
+  .messaging-setup-card .card-body strong {
+    color: #E0E0E0 !important;
+  }
+  .messaging-setup-card .card-body .text-muted {
+    color: #AAAAAA !important;
+  }
+  .messaging-setup-card .card-body code {
+    color: #E91E90;
+    background: rgba(255,255,255,0.08);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+</style>
+
 <div class="container py-4">
   <div class="page-header">
     <h1>📱 Messaging Platform <span class="gradient-text">Setup</span></h1>
@@ -25,7 +46,7 @@
   </div>
 
   <!-- Telegram Setup -->
-  <div class="card mb-4" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;">
+  <div class="card mb-4 messaging-setup-card" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;">
     <div class="card-body p-4">
       <h3>🤖 Telegram Bot Setup</h3>
       <p class="text-muted">The easiest way to test — no cloud deployment needed!</p>
@@ -70,7 +91,7 @@
   </div>
 
   <!-- WhatsApp Setup -->
-  <div class="card mb-4" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;">
+  <div class="card mb-4 messaging-setup-card" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;">
     <div class="card-body p-4">
       <h3>💬 WhatsApp Business Setup</h3>
       <p class="text-muted">Connect via Meta's WhatsApp Cloud API (free test mode available)</p>
@@ -115,7 +136,7 @@ WHATSAPP_VERIFY_TOKEN=couplelens_webhook_verify_2026</pre>
   </div>
 
   <!-- Bot Commands Reference -->
-  <div class="card mb-4" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;">
+  <div class="card mb-4 messaging-setup-card" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;">
     <div class="card-body p-4">
       <h3>🎮 Bot Commands</h3>
       <p>Available commands users can send via messaging platforms:</p>
@@ -140,7 +161,7 @@ WHATSAPP_VERIFY_TOKEN=couplelens_webhook_verify_2026</pre>
   </div>
 
   <!-- Webhook URLs -->
-  <div class="card mb-4" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;">
+  <div class="card mb-4 messaging-setup-card" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 12px;">
     <div class="card-body p-4">
       <h3>🔗 Webhook URLs</h3>
       <p>Use these endpoints with your ngrok or production URL:</p>

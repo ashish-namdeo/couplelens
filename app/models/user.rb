@@ -58,6 +58,16 @@ class User < ApplicationRecord
     role == 'couple_member'
   end
 
+  def generate_bot_link_code!
+    code = "CL-#{SecureRandom.alphanumeric(6).upcase}"
+    update!(bot_link_code: code, bot_link_code_expires_at: 30.minutes.from_now)
+    code
+  end
+
+  def bot_linked?
+    telegram_id.present? || whatsapp_id.present?
+  end
+
   private
 
   def set_default_role

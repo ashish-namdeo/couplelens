@@ -2,6 +2,7 @@ class MessagingBotService
   COMMANDS = {
     "/start" => :handle_start,
     "/help" => :handle_help,
+    "/link" => :handle_link,
     "/rewrite" => :handle_rewrite,
     "/persona" => :handle_persona,
     "/reset" => :handle_reset,
@@ -18,10 +19,25 @@ class MessagingBotService
   end
 
   def process_message(platform_user_id:, text:, user_name: nil)
-    user = find_or_create_user(platform_user_id, user_name)
     command, args = parse_command(text)
 
-    if command && COMMANDS.key?(command)
+    # /start and /link work without a linked account
+    if command == "/start"
+      user = find_user(platform_user_id)
+      return handle_start(user, args)
+    end
+
+    if command == "/link"
+      return handle_link(platform_user_id, args, user_name)
+    end
+
+    # All other commands require a linked account
+    user = find_user(platform_user_id)
+    unless user
+      return unlinked_message
+    end
+
+    result = if command && COMMANDS.key?(command)
       send(COMMANDS[command], user, args)
     elsif text.start_with?("/rewrite ")
       handle_rewrite(user, text.sub("/rewrite ", ""))
@@ -34,10 +50,15 @@ class MessagingBotService
     else
       handle_chat(user, text)
     end
+
+    # Wrap with interactive UI for WhatsApp
+    return result if @platform == :telegram
+    whatsapp_enrich(result, command)
   end
 
   def process_photo(platform_user_id:, image_data:, caption: "", user_name: nil)
-    user = find_or_create_user(platform_user_id, user_name)
+    user = find_user(platform_user_id)
+    return unlinked_message unless user
 
     session = user.conflict_sessions.where.not(status: :completed).order(created_at: :desc).first
 
@@ -75,7 +96,8 @@ class MessagingBotService
   end
 
   def process_text_file(platform_user_id:, text_content:, filename: "file.txt", user_name: nil)
-    user = find_or_create_user(platform_user_id, user_name)
+    user = find_user(platform_user_id)
+    return unlinked_message unless user
 
     session = user.conflict_sessions.where.not(status: :completed).order(created_at: :desc).first
 
@@ -119,23 +141,94 @@ class MessagingBotService
 
   private
 
-  def find_or_create_user(platform_user_id, user_name)
+  def find_user(platform_user_id)
     field = platform_field
-    user = User.find_by(field => platform_user_id.to_s)
+    User.find_by(field => platform_user_id.to_s)
+  end
 
-    unless user
-      name_parts = (user_name || "User").split(" ", 2)
-      user = User.create!(
-        field => platform_user_id.to_s,
-        email: "#{@platform}_#{platform_user_id}@couplelens.bot",
-        password: SecureRandom.hex(16),
-        first_name: name_parts[0] || "User",
-        last_name: name_parts[1] || @platform.to_s.capitalize,
-        role: :couple_member
-      )
+  def handle_link(platform_user_id, args, user_name = nil)
+    code = args&.strip&.upcase
+
+    if code.blank?
+      return link_instructions_message
     end
 
-    user
+    # Find user by link code
+    user = User.find_by(bot_link_code: code)
+
+    unless user
+      return "❌ Invalid link code. Please check and try again.\n\nGet your code from the CoupleLens dashboard."
+    end
+
+    if user.bot_link_code_expires_at && user.bot_link_code_expires_at < Time.current
+      return "❌ This link code has expired. Please generate a new one from your CoupleLens dashboard."
+    end
+
+    # Clear any old bot-created account that holds this platform ID
+    field = platform_field
+    old_user = User.where(field => platform_user_id.to_s).where.not(id: user.id).first
+    if old_user && old_user.email&.end_with?("@couplelens.bot")
+      old_user.destroy
+    elsif old_user
+      old_user.update!(field => nil)
+    end
+
+    # Link the platform account
+    user.update!(
+      field => platform_user_id.to_s,
+      bot_link_code: nil,
+      bot_link_code_expires_at: nil
+    )
+
+    "✅ Account linked successfully! Welcome, #{user.first_name}! 🎉\n\nYou now have full access to CoupleLens bot. Type /help to see all features."
+  end
+
+  def unlinked_message
+    if @platform == :whatsapp
+      {
+        type: :buttons,
+        header: "🔒 Account Required",
+        body: "To use CoupleLens bot, you need a CoupleLens account.\n\n1️⃣ Sign up at the CoupleLens website\n2️⃣ Go to Dashboard → Link Bot\n3️⃣ Send the code here: /link YOUR-CODE",
+        buttons: [
+          { id: "/start", title: "ℹ️ More Info" }
+        ]
+      }
+    else
+      <<~MSG
+        🔒 *Account Required*
+
+        To use CoupleLens bot, you need a CoupleLens account.
+
+        1️⃣ Sign up at the CoupleLens website
+        2️⃣ Go to Dashboard → Link Bot
+        3️⃣ Send the code here: /link YOUR-CODE
+
+        Type /link YOUR-CODE to connect your account.
+      MSG
+    end
+  end
+
+  def link_instructions_message
+    if @platform == :whatsapp
+      {
+        type: :buttons,
+        header: "🔗 Link Your Account",
+        body: "To link your CoupleLens account:\n\n1️⃣ Log in at the CoupleLens website\n2️⃣ Go to Dashboard → Link Bot\n3️⃣ Copy your link code\n4️⃣ Send: /link YOUR-CODE",
+        buttons: [
+          { id: "/start", title: "ℹ️ More Info" }
+        ]
+      }
+    else
+      <<~MSG
+        🔗 *Link Your Account*
+
+        To link your CoupleLens account:
+        1️⃣ Log in at the CoupleLens website
+        2️⃣ Go to Dashboard → Link Bot
+        3️⃣ Copy your link code
+        4️⃣ Send: /link YOUR-CODE
+      MSG
+    end
   end
 
   def platform_field
@@ -152,25 +245,85 @@ class MessagingBotService
   end
 
   def handle_start(user, _args)
-    <<~MSG
-      Welcome to CoupleLens! 💑
+    unless user
+      # Unlinked user — show welcome + link instructions
+      if @platform == :whatsapp
+        return {
+          type: :buttons,
+          header: "Welcome to CoupleLens! 💑",
+          body: "I'm your AI relationship assistant.\n\nTo get started, you need a CoupleLens account.\n\n1️⃣ Sign up at the CoupleLens website\n2️⃣ Go to Dashboard → Link Bot\n3️⃣ Send your code: /link YOUR-CODE",
+          buttons: [
+            { id: "/link", title: "🔗 Link Account" }
+          ]
+        }
+      else
+        return <<~MSG
+          Welcome to CoupleLens! 💑
 
-      I'm your AI relationship assistant. Here's what I can do:
+          I'm your AI relationship assistant.
 
-      💬 *Chat* — Just send me a message and I'll help with relationship advice
-      ✏️ */rewrite <message>* — Rewrite a heated message to be calmer
-      ⚖️ */mediate <topic>* — Start a conflict mediation session
-      � */language <en|hi>* — Switch language (English/Hindi)
-      �🎭 */persona <type>* — Change my personality:
-         • clinical_psychologist
-         • empathetic_listener
-         • relationship_coach
-         • communication_expert
-      🔄 */reset* — Start a fresh conversation
-      ❓ */help* — Show this menu again
+          To get started, you need a CoupleLens account:
+          1️⃣ Sign up at the CoupleLens website
+          2️⃣ Go to Dashboard → Link Bot
+          3️⃣ Send your code: /link YOUR-CODE
+        MSG
+      end
+    end
 
-      Let's start! What's on your mind?
-    MSG
+    # Linked user — show full menu
+    if @platform == :whatsapp
+      {
+        type: :list,
+        header: "CoupleLens 💑",
+        body: "Welcome! I'm your AI relationship assistant. Choose what you'd like to do:",
+        footer: "Or just type a message to chat with me",
+        button_text: "📋 Menu",
+        sections: [
+          {
+            title: "💬 Communication",
+            rows: [
+              { id: "/help", title: "❓ Help", description: "See all available features" },
+              { id: "/rewrite", title: "✏️ Rewrite Message", description: "Rewrite a heated message calmly" },
+              { id: "/reset", title: "🔄 Reset Chat", description: "Start a fresh conversation" }
+            ]
+          },
+          {
+            title: "⚖️ Conflict Resolution",
+            rows: [
+              { id: "/mediate", title: "⚖️ Start Mediation", description: "Begin a conflict mediation session" },
+              { id: "/analyze", title: "📊 Analyze", description: "Get AI mediation analysis" }
+            ]
+          },
+          {
+            title: "⚙️ Settings",
+            rows: [
+              { id: "/language", title: "🌐 Language", description: "Switch between English & Hindi" },
+              { id: "/persona", title: "🎭 Change Persona", description: "Change AI personality style" }
+            ]
+          }
+        ]
+      }
+    else
+      <<~MSG
+        Welcome to CoupleLens! 💑
+
+        I'm your AI relationship assistant. Here's what I can do:
+
+        💬 *Chat* — Just send me a message and I'll help with relationship advice
+        ✏️ */rewrite <message>* — Rewrite a heated message to be calmer
+        ⚖️ */mediate <topic>* — Start a conflict mediation session
+        🌐 */language <en|hi>* — Switch language (English/Hindi)
+        🎭 */persona <type>* — Change my personality:
+           • clinical_psychologist
+           • empathetic_listener
+           • relationship_coach
+           • communication_expert
+        🔄 */reset* — Start a fresh conversation
+        ❓ */help* — Show this menu again
+
+        Let's start! What's on your mind?
+      MSG
+    end
   end
 
   def handle_help(user, _args)
@@ -184,6 +337,19 @@ class MessagingBotService
     if lang_key.blank? || !valid.key?(lang_key)
       conversation = active_conversation(user)
       current = conversation.language || "english"
+
+      if @platform == :whatsapp
+        return {
+          type: :buttons,
+          header: "🌐 Language",
+          body: "Current language: #{current.capitalize}\n\nChoose your preferred language:",
+          buttons: [
+            { id: "/language en", title: "🇬🇧 English" },
+            { id: "/language hi", title: "🇮🇳 Hindi" }
+          ]
+        }
+      end
+
       return <<~MSG
         🌐 Current language: *#{current.capitalize}*
 
@@ -232,6 +398,26 @@ class MessagingBotService
     valid_personas = %w[clinical_psychologist empathetic_listener relationship_coach communication_expert]
 
     if args.blank? || !valid_personas.include?(args.strip.downcase)
+      if @platform == :whatsapp
+        return {
+          type: :list,
+          header: "🎭 Choose Persona",
+          body: "Select an AI personality style for your conversations:",
+          button_text: "🎭 Personas",
+          sections: [
+            {
+              title: "Available Personas",
+              rows: [
+                { id: "/persona clinical_psychologist", title: "🧠 Clinical Psychologist", description: "Evidence-based insights & therapy" },
+                { id: "/persona empathetic_listener", title: "💛 Empathetic Listener", description: "Emotional validation & safe space" },
+                { id: "/persona relationship_coach", title: "💪 Relationship Coach", description: "Actionable strategies & goals" },
+                { id: "/persona communication_expert", title: "🗣️ Communication Expert", description: "Better expression & understanding" }
+              ]
+            }
+          ]
+        }
+      end
+
       return <<~MSG
         Please choose a persona:
         • /persona clinical_psychologist
@@ -452,6 +638,123 @@ class MessagingBotService
       "You are a communication expert specializing in couples dynamics. You analyze language patterns, teach nonviolent communication techniques, and help couples express needs effectively without triggering defensiveness. Keep responses concise for messaging."
     else
       "You are a helpful AI relationship assistant. You provide thoughtful, balanced advice to help couples strengthen their relationship. Keep responses concise for messaging."
+    end
+  end
+
+  # Add contextual quick-reply buttons for WhatsApp responses
+  def whatsapp_enrich(result, command)
+    # If already an interactive response, return as-is
+    return result if result.is_a?(Hash) && result[:type]
+
+    text = result.to_s
+
+    case command
+    when "/start", "/help"
+      result # Already handled with interactive menu
+    when "/reset"
+      {
+        type: :buttons,
+        body: text,
+        buttons: [
+          { id: "/help", title: "📋 Menu" },
+          { id: "/mediate", title: "⚖️ Mediate" }
+        ]
+      }
+    when "/rewrite"
+      if text.include?("Please provide")
+        text # Needs user input, no buttons
+      else
+        {
+          type: :buttons,
+          body: text,
+          buttons: [
+            { id: "/help", title: "📋 Menu" },
+            { id: "/reset", title: "🔄 Reset" }
+          ]
+        }
+      end
+    when "/mediate"
+      if text.include?("Please provide") || text.include?("Start one with")
+        text
+      else
+        {
+          type: :buttons,
+          body: text,
+          footer: "Type: /myperspective Your side of the story...",
+          buttons: [
+            { id: "/help", title: "📋 Menu" }
+          ]
+        }
+      end
+    when "/myperspective"
+      if text.include?("Both perspectives are ready")
+        {
+          type: :buttons,
+          body: text,
+          buttons: [
+            { id: "/analyze", title: "📊 Analyze Now" }
+          ]
+        }
+      else
+        text
+      end
+    when "/partnerperspective"
+      if text.include?("Both perspectives are ready")
+        {
+          type: :buttons,
+          body: text,
+          buttons: [
+            { id: "/analyze", title: "📊 Analyze Now" }
+          ]
+        }
+      else
+        text
+      end
+    when "/analyze"
+      {
+        type: :buttons,
+        body: text,
+        buttons: [
+          { id: "/mediate", title: "⚖️ New Mediation" },
+          { id: "/help", title: "📋 Menu" }
+        ]
+      }
+    when "/language"
+      if text.is_a?(String) && (text.include?("switched") || text.include?("बदल दी"))
+        {
+          type: :buttons,
+          body: text,
+          buttons: [
+            { id: "/help", title: "📋 Menu" }
+          ]
+        }
+      else
+        text
+      end
+    when "/persona"
+      if text.is_a?(String) && text.include?("changed to")
+        {
+          type: :buttons,
+          body: text,
+          buttons: [
+            { id: "/help", title: "📋 Menu" },
+            { id: "/reset", title: "🔄 Reset Chat" }
+          ]
+        }
+      else
+        text
+      end
+    else
+      # Regular chat - add a subtle menu button
+      {
+        type: :buttons,
+        body: text,
+        buttons: [
+          { id: "/help", title: "📋 Menu" },
+          { id: "/rewrite", title: "✏️ Rewrite" },
+          { id: "/mediate", title: "⚖️ Mediate" }
+        ]
+      }
     end
   end
 end
