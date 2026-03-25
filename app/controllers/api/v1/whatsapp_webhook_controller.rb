@@ -183,10 +183,17 @@ module Api
         Rails.logger.error("WhatsApp send error: #{e.message}")
       end
 
-      # Send interactive buttons (max 3 buttons)
+      # Send interactive buttons (max 3 buttons, body max 1024 chars)
       def send_whatsapp_buttons(to, body_text, buttons, phone_number_id, header: nil, footer: nil)
         token = Rails.application.config.whatsapp_access_token
         url = "https://graph.facebook.com/v22.0/#{phone_number_id}/messages"
+
+        # WhatsApp limits button message body to 1024 chars
+        # If too long, send full text first, then a short follow-up with buttons
+        if body_text.length > 1024
+          send_whatsapp_message(to, body_text, phone_number_id)
+          body_text = "What would you like to do next? 👇"
+        end
 
         interactive = {
           type: "button",

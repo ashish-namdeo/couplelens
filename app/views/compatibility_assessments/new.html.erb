@@ -1,30 +1,133 @@
-<div class="container py-4" style="max-width: 600px;">
+<div class="container py-4" style="max-width: 700px;">
   <div class="page-header">
     <h1>💕 New <span class="gradient-text">Assessment</span></h1>
-    <p>Start your compatibility evaluation</p>
+    <p>Answer a few questions so our AI can evaluate your compatibility</p>
   </div>
 
   <%= form_with(model: @assessment, class: 'animate-fade-in') do |f| %>
-    <div class="glass-card-static p-4">
-      <div class="mb-4">
+    <div class="glass-card-static p-4 mb-4">
+      <h5 class="fw-bold mb-3"><i class="bi bi-person-hearts me-2" style="color: #6C63FF;"></i>About Your Relationship</h5>
+
+      <div class="mb-3">
         <%= f.label :partner_name, "Your Partner's Name", class: 'form-label' %>
-        <%= f.text_field :partner_name, class: 'form-control', placeholder: "Enter your partner's name" %>
+        <%= f.text_field :partner_name, class: 'form-control', placeholder: "Enter your partner's name", required: true %>
       </div>
 
-      <div class="glass-card p-3 mb-4" style="background: rgba(108, 99, 255, 0.05);">
-        <h6 class="fw-bold mb-2"><i class="bi bi-info-circle me-1"></i> What We'll Assess</h6>
-        <ul class="list-unstyled small text-muted mb-0">
-          <li class="mb-1">💰 Financial mindset & money management compatibility</li>
-          <li class="mb-1">🏡 Lifestyle choices & daily routine alignment</li>
-          <li class="mb-1">👶 Parenting philosophy & family values</li>
-          <li>📊 Overall compatibility score with detailed report</li>
-        </ul>
+      <div class="mb-3">
+        <%= label_tag :relationship_duration, "How long have you been together?", class: 'form-label' %>
+        <%= select_tag :relationship_duration, options_for_select([
+          ["Select...", ""],
+          ["Less than 6 months", "less_than_6_months"],
+          ["6 months – 1 year", "6_months_to_1_year"],
+          ["1 – 3 years", "1_to_3_years"],
+          ["3 – 5 years", "3_to_5_years"],
+          ["5+ years", "5_plus_years"]
+        ]), class: 'form-select', required: true %>
+      </div>
+    </div>
+
+    <div class="glass-card-static p-4 mb-4">
+      <h5 class="fw-bold mb-3"><i class="bi bi-currency-rupee me-2" style="color: #2ECC71;"></i>Financial Compatibility</h5>
+
+      <div class="mb-3">
+        <%= label_tag :financial_approach, "How do you manage finances as a couple?", class: 'form-label' %>
+        <%= select_tag :financial_approach, options_for_select([
+          ["Select...", ""],
+          ["Completely separate", "completely_separate"],
+          ["Mostly separate with some shared", "mostly_separate"],
+          ["Equal split on shared expenses", "equal_split"],
+          ["Mostly shared accounts", "mostly_shared"],
+          ["Completely shared", "completely_shared"]
+        ]), class: 'form-select', required: true %>
       </div>
 
-      <div class="d-flex gap-3">
-        <%= f.submit 'Generate Assessment', class: 'btn btn-gradient btn-lg' %>
-        <%= link_to 'Cancel', compatibility_assessments_path, class: 'btn btn-outline-glass btn-lg' %>
+      <div class="mb-3">
+        <%= label_tag :spending_habits, "How aligned are your spending habits?", class: 'form-label' %>
+        <%= select_tag :spending_habits, options_for_select([
+          ["Select...", ""],
+          ["Very different – we often disagree", "very_different"],
+          ["Somewhat different but manageable", "somewhat_different"],
+          ["Mostly aligned", "mostly_aligned"],
+          ["Very aligned – we rarely disagree", "very_aligned"]
+        ]), class: 'form-select', required: true %>
       </div>
+    </div>
+
+    <div class="glass-card-static p-4 mb-4">
+      <h5 class="fw-bold mb-3"><i class="bi bi-house-heart me-2" style="color: #E74C3C;"></i>Lifestyle Compatibility</h5>
+
+      <div class="mb-3">
+        <%= label_tag :social_preference, "Social life preference", class: 'form-label' %>
+        <%= select_tag :social_preference, options_for_select([
+          ["Select...", ""],
+          ["Both introverts", "both_introverts"],
+          ["Both extroverts", "both_extroverts"],
+          ["One introvert, one extrovert", "mixed"],
+          ["Varies depending on mood", "varies"]
+        ]), class: 'form-select', required: true %>
+      </div>
+
+      <div class="mb-3">
+        <%= label_tag :conflict_style, "How do you typically handle disagreements?", class: 'form-label' %>
+        <%= select_tag :conflict_style, options_for_select([
+          ["Select...", ""],
+          ["We talk it out calmly", "calm_discussion"],
+          ["We argue but resolve quickly", "argue_then_resolve"],
+          ["One of us avoids conflict", "avoidant"],
+          ["We often struggle to resolve issues", "struggle"]
+        ]), class: 'form-select', required: true %>
+      </div>
+    </div>
+
+    <div class="glass-card-static p-4 mb-4">
+      <h5 class="fw-bold mb-3"><i class="bi bi-people me-2" style="color: #F39C12;"></i>Parenting & Family</h5>
+
+      <div class="mb-3">
+        <%= label_tag :children_preference, "Views on having children", class: 'form-label' %>
+        <%= select_tag :children_preference, options_for_select([
+          ["Select...", ""],
+          ["Both want children", "both_want"],
+          ["Both don't want children", "both_dont_want"],
+          ["One wants, the other doesn't", "disagree"],
+          ["Haven't discussed yet", "undecided"],
+          ["Already have children together", "already_have"]
+        ]), class: 'form-select', required: true %>
+      </div>
+
+      <div class="mb-3">
+        <%= label_tag :family_involvement, "How involved are extended families in your relationship?", class: 'form-label' %>
+        <%= select_tag :family_involvement, options_for_select([
+          ["Select...", ""],
+          ["Very involved – they influence decisions", "very_involved"],
+          ["Moderately involved", "moderate"],
+          ["Minimally involved", "minimal"],
+          ["Not involved at all", "not_involved"]
+        ]), class: 'form-select', required: true %>
+      </div>
+    </div>
+
+    <div class="glass-card-static p-4 mb-4">
+      <h5 class="fw-bold mb-3"><i class="bi bi-chat-heart me-2" style="color: #9B59B6;"></i>In Your Own Words</h5>
+
+      <div class="mb-3">
+        <%= label_tag :strengths_text, "What are your biggest strengths as a couple?", class: 'form-label' %>
+        <%= text_area_tag :strengths_text, nil, class: 'form-control', rows: 3, placeholder: "e.g. We communicate well, share similar values, support each other's goals..." %>
+      </div>
+
+      <div class="mb-3">
+        <%= label_tag :concerns_text, "What concerns you most about your relationship?", class: 'form-label' %>
+        <%= text_area_tag :concerns_text, nil, class: 'form-control', rows: 3, placeholder: "e.g. Different career priorities, long-distance challenges, family pressure..." %>
+      </div>
+    </div>
+
+    <div class="glass-card p-3 mb-4" style="background: rgba(108, 99, 255, 0.05);">
+      <h6 class="fw-bold mb-2"><i class="bi bi-stars me-1"></i> AI-Powered Analysis</h6>
+      <p class="small text-muted mb-0">Our AI will analyze your answers to generate personalized scores for financial, lifestyle, and parenting compatibility along with a detailed report and actionable recommendations.</p>
+    </div>
+
+    <div class="d-flex gap-3">
+      <%= f.submit 'Generate AI Assessment', class: 'btn btn-gradient btn-lg', data: { disable_with: 'Analyzing...' } %>
+      <%= link_to 'Cancel', compatibility_assessments_path, class: 'btn btn-outline-glass btn-lg' %>
     </div>
   <% end %>
 </div>

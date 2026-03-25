@@ -14,21 +14,40 @@ class CompatibilityAssessmentsController < ApplicationController
 
   def create
     @assessment = current_user.compatibility_assessments.new(assessment_params)
-    @assessment.status = :completed
+    @assessment.status = :in_progress
 
-    # Generate assessment scores (simulated AI analysis)
-    @assessment.financial_score = rand(55.0..95.0).round(1)
-    @assessment.lifestyle_score = rand(60.0..98.0).round(1)
-    @assessment.parenting_score = rand(50.0..92.0).round(1)
-    @assessment.overall_score = @assessment.overall_calculated_score
+    begin
+      gemini = GeminiService.new
+      result = gemini.assess_compatibility(answers: {
+        partner_name: params[:compatibility_assessment][:partner_name],
+        relationship_duration: params[:relationship_duration],
+        financial_approach: params[:financial_approach],
+        spending_habits: params[:spending_habits],
+        social_preference: params[:social_preference],
+        conflict_style: params[:conflict_style],
+        children_preference: params[:children_preference],
+        family_involvement: params[:family_involvement],
+        strengths_text: params[:strengths_text],
+        concerns_text: params[:concerns_text]
+      })
 
-    @assessment.strengths = generate_strengths
-    @assessment.risk_areas = generate_risk_areas
-    @assessment.full_report = generate_full_report(@assessment)
+      @assessment.financial_score = result[:financial_score]
+      @assessment.lifestyle_score = result[:lifestyle_score]
+      @assessment.parenting_score = result[:parenting_score]
+      @assessment.overall_score = @assessment.overall_calculated_score
+      @assessment.strengths = result[:strengths]
+      @assessment.risk_areas = result[:risk_areas]
+      @assessment.full_report = result[:full_report]
+      @assessment.status = :completed
 
-    if @assessment.save
-      redirect_to @assessment, notice: 'Compatibility assessment completed!'
-    else
+      if @assessment.save
+        redirect_to @assessment, notice: 'AI compatibility assessment completed!'
+      else
+        render :new, status: :unprocessable_entity
+      end
+    rescue => e
+      Rails.logger.error("Compatibility assessment error: #{e.message}")
+      @assessment.errors.add(:base, "AI analysis failed. Please try again.")
       render :new, status: :unprocessable_entity
     end
   end
@@ -41,60 +60,5 @@ class CompatibilityAssessmentsController < ApplicationController
 
   def assessment_params
     params.require(:compatibility_assessment).permit(:partner_name)
-  end
-
-  def generate_strengths
-    strengths = [
-      "Strong emotional connection and mutual empathy",
-      "Aligned long-term life goals and vision",
-      "Excellent conflict resolution skills",
-      "Shared values around family and community",
-      "Compatible communication styles",
-      "Mutual respect for individual growth",
-      "Strong physical and emotional intimacy",
-      "Aligned financial priorities and habits"
-    ]
-    strengths.sample(4).join("\n• ")
-  end
-
-  def generate_risk_areas
-    risks = [
-      "Different approaches to financial planning",
-      "Varying expectations around work-life balance",
-      "Potential differences in parenting philosophies",
-      "Communication gaps during high-stress periods",
-      "Different love languages may need attention",
-      "Boundaries with extended family members"
-    ]
-    risks.sample(3).join("\n• ")
-  end
-
-  def generate_full_report(assessment)
-    <<~REPORT
-      # Compatibility Assessment Report
-
-      ## Overall Compatibility: #{assessment.overall_score}%
-
-      ## Financial Compatibility: #{assessment.financial_score}%
-      Your financial mindsets show #{assessment.financial_score > 75 ? 'strong alignment' : 'some areas for growth'}. Focus on establishing shared financial goals and regular money conversations.
-
-      ## Lifestyle Compatibility: #{assessment.lifestyle_score}%
-      Your lifestyle preferences are #{assessment.lifestyle_score > 75 ? 'well-matched' : 'diverse but complementable'}. Embrace both shared activities and individual interests.
-
-      ## Parenting Philosophy: #{assessment.parenting_score}%
-      Your parenting perspectives #{assessment.parenting_score > 75 ? 'align well' : 'offer complementary strengths'}. Regular discussions about parenting values will strengthen your partnership.
-
-      ## Strengths
-      • #{assessment.strengths}
-
-      ## Areas for Growth
-      • #{assessment.risk_areas}
-
-      ## Recommendations
-      1. Schedule weekly check-ins to discuss relationship goals
-      2. Take a couples communication workshop
-      3. Practice daily appreciation rituals
-      4. Consider pre-marital counseling for deeper exploration
-    REPORT
   end
 end

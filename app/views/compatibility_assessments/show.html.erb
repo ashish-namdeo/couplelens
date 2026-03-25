@@ -5,7 +5,7 @@
 
   <div class="page-header">
     <h1>💕 Assessment with <span class="gradient-text"><%= @assessment.partner_name %></span></h1>
-    <p>Generated on <%= @assessment.created_at.strftime('%B %d, %Y') %></p>
+    <p>Generated on <%= @assessment.created_at.strftime('%B %d, %Y') %> <span class="badge bg-success bg-opacity-25 text-success ms-2"><i class="bi bi-stars me-1"></i>AI-Powered</span></p>
   </div>
 
   <!-- Overall Score -->
@@ -59,7 +59,7 @@
 
   <!-- Full Report -->
   <div class="glass-card-static p-4">
-    <h5 class="fw-bold mb-3"><i class="bi bi-file-text-fill me-2" style="color: #6C63FF;"></i>Full Report</h5>
+    <h5 class="fw-bold mb-3"><i class="bi bi-file-text-fill me-2" style="color: #6C63FF;"></i>Full AI Report</h5>
     <%= simple_format(@assessment.full_report) %>
   </div>
 </div>

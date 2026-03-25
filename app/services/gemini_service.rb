@@ -99,6 +99,70 @@ class GeminiService
     parse_mediation(reply)
   end
 
+  # AI Compatibility Assessment — analyzes couple's compatibility from questionnaire
+  def assess_compatibility(answers:)
+    messages = [
+      {
+        role: "system",
+        content: <<~PROMPT
+          You are an expert relationship counselor and compatibility analyst. Based on the couple's questionnaire answers, provide a thorough compatibility assessment.
+
+          You MUST respond with ONLY valid JSON (no markdown, no code fences, no extra text) in this exact structure:
+          {
+            "financial_score": <number 0-100>,
+            "lifestyle_score": <number 0-100>,
+            "parenting_score": <number 0-100>,
+            "strengths": ["strength1", "strength2", "strength3", "strength4"],
+            "risk_areas": ["risk1", "risk2", "risk3"],
+            "full_report": "A detailed multi-paragraph compatibility report in markdown format covering financial compatibility, lifestyle compatibility, parenting/family compatibility, overall analysis, and specific actionable recommendations. Use ## headings for sections."
+          }
+
+          Guidelines for scoring:
+          - Be realistic and nuanced — avoid giving all high or all low scores
+          - Base scores on the actual answers provided, not random values
+          - Strengths should highlight genuine positives from their answers
+          - Risk areas should be constructive concerns, not criticisms
+          - The full report should be personalized, referencing their specific answers
+          - Include the partner's name throughout the report for personalization
+        PROMPT
+      },
+      {
+        role: "user",
+        content: <<~ANSWERS
+          Please analyze this couple's compatibility:
+
+          Partner's Name: #{answers[:partner_name]}
+          Relationship Duration: #{answers[:relationship_duration]&.humanize}
+
+          **Financial:**
+          - Financial approach: #{answers[:financial_approach]&.humanize}
+          - Spending habits alignment: #{answers[:spending_habits]&.humanize}
+
+          **Lifestyle:**
+          - Social preference: #{answers[:social_preference]&.humanize}
+          - Conflict handling style: #{answers[:conflict_style]&.humanize}
+
+          **Parenting & Family:**
+          - Children preference: #{answers[:children_preference]&.humanize}
+          - Extended family involvement: #{answers[:family_involvement]&.humanize}
+
+          **In Their Own Words:**
+          - Strengths they see: #{answers[:strengths_text].presence || "Not provided"}
+          - Concerns they have: #{answers[:concerns_text].presence || "Not provided"}
+        ANSWERS
+      }
+    ]
+
+    response = chat_with_retry(
+      messages: messages,
+      temperature: 0.6,
+      max_tokens: 3000
+    )
+
+    reply = extract_reply(response)
+    parse_compatibility(reply)
+  end
+
   # AI Conversation Rewrite — rewrites messages to be calmer
   def rewrite_message(original_message, language: "english")
     lang_instruction = if language == "hindi"
@@ -221,6 +285,36 @@ class GeminiService
       defensiveness_risk: 50,
       constructiveness: 50,
       suggested_approach: "Express feelings using 'I' statements and focus on specific behaviors."
+    }
+  end
+
+  def parse_compatibility(reply)
+    # Strip markdown code fences if present
+    cleaned = reply.gsub(/\A```(?:json)?\s*/, "").gsub(/\s*```\z/, "").strip
+    data = JSON.parse(cleaned)
+
+    {
+      financial_score: data["financial_score"].to_f.clamp(0, 100).round(1),
+      lifestyle_score: data["lifestyle_score"].to_f.clamp(0, 100).round(1),
+      parenting_score: data["parenting_score"].to_f.clamp(0, 100).round(1),
+      strengths: Array(data["strengths"]).first(5).join("\n• "),
+      risk_areas: Array(data["risk_areas"]).first(4).join("\n• "),
+      full_report: data["full_report"].to_s
+    }
+  rescue JSON::ParserError => e
+    Rails.logger.error("Compatibility JSON parse error: #{e.message}")
+    Rails.logger.error("Raw reply: #{reply}")
+    default_compatibility
+  end
+
+  def default_compatibility
+    {
+      financial_score: 65.0,
+      lifestyle_score: 65.0,
+      parenting_score: 65.0,
+      strengths: "We couldn't generate a detailed analysis at this time\n• Please try again for personalized results",
+      risk_areas: "Assessment could not be completed\n• Please retry for accurate results",
+      full_report: "We were unable to generate a detailed compatibility report. Please try again."
     }
   end
 end

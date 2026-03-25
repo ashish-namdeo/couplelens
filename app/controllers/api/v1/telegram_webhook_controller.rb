@@ -9,6 +9,13 @@ module Api
         end
 
         update = params.permit!.to_h
+
+        # Handle inline keyboard button clicks
+        if update["callback_query"].present?
+          handle_callback_query(update["callback_query"])
+          return render_success
+        end
+
         message = update.dig("message")
         return render_success unless message
 
@@ -34,7 +41,7 @@ module Api
             reply = "Sorry, I couldn't download that image. Please try again."
           end
 
-          send_telegram_message(chat_id, reply)
+          send_telegram_response(chat_id, reply)
           return render_success
         end
 
@@ -72,7 +79,7 @@ module Api
             reply = "I can process image files and .txt files. Please send a supported file type."
           end
 
-          send_telegram_message(chat_id, reply)
+          send_telegram_response(chat_id, reply)
           return render_success
         end
 
@@ -86,7 +93,7 @@ module Api
           user_name: user_name
         )
 
-        send_telegram_message(chat_id, reply)
+        send_telegram_response(chat_id, reply)
         render_success
       rescue StandardError => e
         Rails.logger.error("Telegram webhook error: #{e.message}")
@@ -95,6 +102,36 @@ module Api
 
       private
 
+      def handle_callback_query(callback_query)
+        chat_id = callback_query.dig("message", "chat", "id")
+        callback_id = callback_query["id"]
+        data = callback_query["data"] || ""
+        user_name = [callback_query.dig("from", "first_name"), callback_query.dig("from", "last_name")].compact.join(" ")
+
+        # Acknowledge the button press immediately
+        answer_callback_query(callback_id)
+
+        bot_service = MessagingBotService.new(platform: :telegram)
+        reply = bot_service.process_message(
+          platform_user_id: chat_id,
+          text: data,
+          user_name: user_name
+        )
+
+        send_telegram_response(chat_id, reply)
+      rescue StandardError => e
+        Rails.logger.error("Telegram callback error: #{e.message}")
+      end
+
+      def answer_callback_query(callback_id)
+        token = Rails.application.config.telegram_bot_token
+        HTTParty.post("https://api.telegram.org/bot#{token}/answerCallbackQuery", body: {
+          callback_query_id: callback_id
+        })
+      rescue StandardError => e
+        Rails.logger.error("Telegram answerCallbackQuery error: #{e.message}")
+      end
+
       def valid_token?
         token = params[:token] || request.headers["X-Telegram-Bot-Token"]
         token.present? && ActiveSupport::SecurityUtils.secure_compare(
@@ -102,24 +139,33 @@ module Api
         )
       end
 
-      def send_telegram_message(chat_id, text)
+      # Smart response: sends inline keyboard or plain text based on response type
+      def send_telegram_response(chat_id, result)
+        if result.is_a?(Hash) && result[:text]
+          send_telegram_message(chat_id, result[:text], reply_markup: result[:reply_markup])
+        else
+          send_telegram_message(chat_id, result.to_s)
+        end
+      end
+
+      def send_telegram_message(chat_id, text, reply_markup: nil)
         token = Rails.application.config.telegram_bot_token
         url = "https://api.telegram.org/bot#{token}/sendMessage"
 
-        # Try with Markdown first, fall back to plain text if it fails
-        response = HTTParty.post(url, body: {
+        body = {
           chat_id: chat_id,
           text: text,
           parse_mode: "Markdown"
-        })
+        }
+        body[:reply_markup] = reply_markup.to_json if reply_markup
+
+        response = HTTParty.post(url, body: body, timeout: 30)
 
         result = JSON.parse(response.body)
         unless result["ok"]
           Rails.logger.warn("Telegram Markdown failed: #{result['description']}. Retrying as plain text.")
-          HTTParty.post(url, body: {
-            chat_id: chat_id,
-            text: text
-          })
+          body.delete(:parse_mode)
+          HTTParty.post(url, body: body, timeout: 30)
         end
       rescue StandardError => e
         Rails.logger.error("Telegram send error: #{e.message}")
