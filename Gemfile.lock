@@ -216,8 +216,7 @@ GEM
       prettyprint
     prettyprint (0.2.0)
     prism (1.9.0)
-    psych (5.3.1)
-      date
+    psych (4.0.6)
       stringio
     public_suffix (6.0.2)
     puma (7.2.0)
@@ -338,6 +337,7 @@ DEPENDENCIES
   jsbundling-rails
   letter_opener
   pg (~> 1.1)
+  psych (~> 4.0)
   puma (>= 5.0)
   rails (~> 7.0.10)
   redis
