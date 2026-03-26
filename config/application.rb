@@ -22,7 +22,7 @@ module CoupleLens
   class Application < Rails::Application
     # Initialize configuration defaults for originally generated Rails version.
     config.load_defaults 7.0
-       config.hosts << "eb9a-2401-4900-8822-5328-dcb5-5bd6-7fa5-7074.ngrok-free.app"
+    # Ngrok host allowed only in development (moved to development.rb)
     # Configuration for the application, engines, and railties goes here.
     #
     # These settings can be overridden in specific environments using the files

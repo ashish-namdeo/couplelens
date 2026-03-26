@@ -2,6 +2,9 @@ require "active_support/core_ext/integer/time"
 
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
+  
+  # Allow ngrok tunneling
+  config.hosts << "eb9a-2401-4900-8822-5328-dcb5-5bd6-7fa5-7074.ngrok-free.app"
 
   # In the development environment your application's code is reloaded any time
   # it changes. This slows down response time but is perfect for development
