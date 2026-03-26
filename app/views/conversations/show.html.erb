@@ -6,7 +6,14 @@
       <% end %>
       <span style="font-size: 1.5rem;"><%= @conversation.persona_icon %></span>
       <div>
-        <h5 class="fw-bold mb-0"><%= @conversation.title %></h5>
+        <h5 class="fw-bold mb-0">
+          <%= @conversation.title %>
+          <% if @conversation.platform == 'telegram' %>
+            <span class="badge ms-1" style="background: rgba(0, 136, 204, 0.15); color: #0088cc; font-size: 0.65rem;">✈️ Telegram</span>
+          <% elsif @conversation.platform == 'whatsapp' %>
+            <span class="badge ms-1" style="background: rgba(37, 211, 102, 0.15); color: #25D366; font-size: 0.65rem;">📱 WhatsApp</span>
+          <% end %>
+        </h5>
         <span class="text-muted small"><%= @conversation.persona_display_name %></span>
       </div>
     </div>

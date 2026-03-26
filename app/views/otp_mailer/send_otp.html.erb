@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background: #1a1a2e; color: #ffffff; margin: 0; padding: 0; }
+    .container { max-width: 480px; margin: 40px auto; padding: 0 20px; }
+    .card { background: linear-gradient(135deg, #16213e 0%, #1a1a2e 100%); border: 1px solid rgba(139, 92, 246, 0.3); border-radius: 16px; padding: 40px 32px; text-align: center; }
+    .logo { font-size: 28px; font-weight: bold; margin-bottom: 8px; }
+    .logo span { background: linear-gradient(135deg, #8b5cf6, #ec4899); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+    .subtitle { color: #94a3b8; font-size: 14px; margin-bottom: 32px; }
+    .otp-box { background: rgba(139, 92, 246, 0.15); border: 2px dashed rgba(139, 92, 246, 0.5); border-radius: 12px; padding: 24px; margin: 24px 0; }
+    .otp-code { font-size: 36px; font-weight: bold; letter-spacing: 8px; color: #8b5cf6; font-family: monospace; }
+    .message { color: #cbd5e1; font-size: 14px; line-height: 1.6; margin: 16px 0; }
+    .warning { color: #f59e0b; font-size: 12px; margin-top: 24px; }
+    .footer { text-align: center; color: #64748b; font-size: 12px; margin-top: 24px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="card">
+      <div class="logo">💑 <span>CoupleLens</span></div>
+      <div class="subtitle">Your AI Relationship Assistant</div>
+
+      <p class="message">Hi <strong><%= @user.first_name %></strong>,</p>
+      <p class="message">Use this OTP to complete your login:</p>
+
+      <div class="otp-box">
+        <div class="otp-code"><%= @otp_code %></div>
+      </div>
+
+      <p class="message">This code expires in <strong>5 minutes</strong>.</p>
+      <p class="warning">⚠️ If you didn't request this, please ignore this email.</p>
+    </div>
+    <div class="footer">
+      <p>&copy; <%= Date.current.year %> CoupleLens. All rights reserved.</p>
+    </div>
+  </div>
+</body>
+</html>

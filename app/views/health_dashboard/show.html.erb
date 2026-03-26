@@ -4,6 +4,22 @@
     <p>Track your relationship metrics over time</p>
   </div>
 
+  <!-- Calculate Scores -->
+  <div class="glass-card-static p-4 mb-4">
+    <div class="d-flex justify-content-between align-items-center">
+      <div>
+        <h5 class="fw-bold mb-1">🤖 AI-Powered Health Analysis</h5>
+        <p class="text-muted small mb-0">
+          Scores are calculated from your Telegram/WhatsApp conversations, conflict sessions, memories, expenses, and program activity.
+          <% if @last_calculated %>
+            <br>Last updated: <strong><%= time_ago_in_words(@last_calculated) %> ago</strong>
+          <% end %>
+        </p>
+      </div>
+      <%= button_to "🔄 Recalculate Scores", calculate_health_path, method: :post, class: "btn btn-primary", data: { disable_with: "Analyzing activity..." } %>
+    </div>
+  </div>
+
   <!-- Overall Score -->
   <div class="glass-card-static p-4 mb-4">
     <div class="row align-items-center">
@@ -35,13 +51,30 @@
     </div>
   </div>
 
+  <%
+    dark_chart_options = {
+      scales: {
+        x: { ticks: { color: '#aaa' }, grid: { color: 'rgba(255,255,255,0.08)' } },
+        y: { ticks: { color: '#aaa' }, grid: { color: 'rgba(255,255,255,0.08)' }, min: 0, max: 100 }
+      },
+      plugins: {
+        legend: { labels: { color: '#ccc' } }
+      },
+      elements: {
+        point: { radius: 5, hoverRadius: 7 },
+        line: { tension: 0.3, borderWidth: 3 }
+      }
+    }
+  %>
+
   <!-- Charts -->
   <div class="row g-4">
     <div class="col-md-6">
       <div class="glass-card-static p-4">
         <h5 class="fw-bold mb-3">📈 Communication Trend</h5>
         <% if @communication_scores.any? %>
-          <%= line_chart @communication_scores.map { |m| [m.recorded_at.strftime('%b %d'), m.score] }, colors: ['#6C63FF'], library: { backgroundColor: 'transparent' } %>
+          <%= line_chart @communication_scores.map { |m| [m.recorded_at.strftime('%b %d'), m.score] },
+                colors: ['#6C63FF'], library: dark_chart_options %>
         <% else %>
           <div class="empty-state py-3">
             <p class="text-muted small">No data yet. Metrics will appear as you use the platform.</p>
@@ -53,7 +86,8 @@
       <div class="glass-card-static p-4">
         <h5 class="fw-bold mb-3">💕 Trust Levels</h5>
         <% if @trust_scores.any? %>
-          <%= line_chart @trust_scores.map { |m| [m.recorded_at.strftime('%b %d'), m.score] }, colors: ['#FF6B9D'], library: { backgroundColor: 'transparent' } %>
+          <%= line_chart @trust_scores.map { |m| [m.recorded_at.strftime('%b %d'), m.score] },
+                colors: ['#FF6B9D'], library: dark_chart_options %>
         <% else %>
           <div class="empty-state py-3">
             <p class="text-muted small">No data yet. Trust metrics update automatically.</p>

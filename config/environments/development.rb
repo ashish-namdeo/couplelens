@@ -37,9 +37,13 @@ Rails.application.configure do
   config.active_storage.service = :local
 
   # Don't care if the mailer can't send.
-  config.action_mailer.raise_delivery_errors = false
+  config.action_mailer.raise_delivery_errors = true
 
   config.action_mailer.perform_caching = false
+
+  # Use letter_opener to preview emails in browser (no real SMTP needed)
+  config.action_mailer.delivery_method = :letter_opener
+  config.action_mailer.perform_deliveries = true
 
   # Devise mailer default url
   config.action_mailer.default_url_options = { host: 'localhost', port: 3000 }

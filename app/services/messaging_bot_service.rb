@@ -46,16 +46,39 @@ class MessagingBotService
   end
 
   def process_message(platform_user_id:, text:, user_name: nil)
+    # Handle WhatsApp button reply IDs for link confirmation
+    if text&.start_with?("confirm_link_")
+      user_id = text.sub("confirm_link_", "")
+      return handle_confirm_link(platform_user_id, user_id)
+    end
+
+    if text == "reject_link"
+      return "❌ Link request cancelled. No changes were made."
+    end
+
     command, args = parse_command(text)
 
     # /start and /link work without a linked account
     if command == "/start"
+      # Handle Telegram deep link: /start LINK_15
+      if args&.start_with?("LINK_")
+        user_id = args.sub("LINK_", "")
+        return handle_confirm_link(platform_user_id, user_id)
+      end
       user = find_user(platform_user_id)
-      return handle_start(user, args)
+      return handle_start(user, platform_user_id)
     end
 
     if command == "/link"
       return handle_link(platform_user_id, args, user_name)
+    end
+
+    if command == "/confirm_link"
+      return handle_confirm_link(platform_user_id, args)
+    end
+
+    if command == "/reject_link"
+      return "❌ Link request cancelled. No changes were made."
     end
 
     # All other commands require a linked account
@@ -234,6 +257,84 @@ class MessagingBotService
     "✅ Account linked successfully! Welcome, #{user.first_name}! 🎉\n\nYou now have full access to CoupleLens bot. Type /help to see all features."
   end
 
+  def handle_confirm_link(platform_user_id, args)
+    user_id = args&.strip
+    user = User.find_by(id: user_id)
+
+    unless user
+      return "❌ Link request not found or expired."
+    end
+
+    # Verify pending link code exists and is not expired
+    unless user.bot_link_code&.start_with?("WA-LINK-", "TG-LINK-") &&
+           user.bot_link_code_expires_at && user.bot_link_code_expires_at > Time.current
+      return "❌ This link request has expired. Please try again from the CoupleLens dashboard."
+    end
+
+    field = platform_field
+
+    # Clear any old account holding this platform ID
+    old_user = User.where(field => platform_user_id.to_s).where.not(id: user.id).first
+    if old_user && old_user.email&.end_with?("@couplelens.bot")
+      old_user.destroy
+    elsif old_user
+      old_user.update!(field => nil)
+    end
+
+    # Link the account
+    user.update!(
+      field => platform_user_id.to_s,
+      bot_link_code: nil,
+      bot_link_code_expires_at: nil
+    )
+
+    # Archive any pre-existing conversations for this platform so the user starts fresh
+    user.conversations.where(platform: @platform.to_s, status: :active).update_all(status: :archived)
+
+    if @platform == :telegram
+      return telegram_reply(
+        "✅ *Account linked successfully!*\n\nWelcome, #{user.first_name}! 🎉\nYour CoupleLens account is now connected.",
+        [
+          [{ text: "📋 Show Menu", callback_data: "/help" }],
+          [{ text: "🤖 Pick Agent", callback_data: "/agent" }]
+        ]
+      )
+    end
+
+    {
+      type: :list,
+      header: "✅ Account Linked!",
+      body: "Welcome, #{user.first_name}! 🎉\n\nYour CoupleLens account is now connected.\n\nChoose what you'd like to do:",
+      button_text: "📋 Menu",
+      sections: [
+        {
+          title: "🤖 AI Agents",
+          rows: AGENTS.map { |key, agent|
+            { id: "/agent #{key}", title: agent[:name], description: agent[:description] }
+          }
+        },
+        {
+          title: "✏️ Communication Tools",
+          rows: [
+            { id: "/rewrite", title: "✏️ Rewrite Message", description: "Rewrite a heated message calmly" }
+          ]
+        },
+        {
+          title: "⚖️ Conflict Resolution",
+          rows: [
+            { id: "/mediate", title: "⚖️ Start Mediation", description: "Begin a conflict mediation session" }
+          ]
+        },
+        {
+          title: "⚙️ Settings",
+          rows: [
+            { id: "/language", title: "🌐 Language", description: "Switch between English & Hindi" }
+          ]
+        }
+      ]
+    }
+  end
+
   def unlinked_message
     if @platform == :whatsapp
       {
@@ -283,21 +384,22 @@ class MessagingBotService
     [parts[0].downcase, parts[1]]
   end
 
-  def handle_start(user, _args)
+  def handle_start(user, platform_user_id = nil)
     unless user
       # Unlinked user — show welcome + link instructions
       if @platform == :whatsapp
         return {
           type: :buttons,
           header: "Welcome to CoupleLens! 💑",
-          body: "I'm your AI relationship assistant.\n\nTo get started, you need a CoupleLens account.\n\n1️⃣ Sign up at the CoupleLens website\n2️⃣ Go to Dashboard → Link Bot\n3️⃣ Send your code: /link YOUR-CODE",
+          body: "I'm your AI relationship assistant.\n\nTo get started, you need a CoupleLens account.\n\n1️⃣ Sign up at the CoupleLens website\n2️⃣ Go to Dashboard → Link Bot\n3️⃣ Enter your phone number and click Send Link",
           buttons: [
             { id: "/link", title: "🔗 Link Account" }
           ]
         }
       else
+        chat_id_text = platform_user_id ? "\n\n📋 *Your Chat ID:* `#{platform_user_id}`\n_(Copy this to the CoupleLens dashboard)_" : ""
         return telegram_reply(
-          "💑 *Welcome to CoupleLens!*\n\nI'm your AI relationship assistant.\n\nTo get started, link your CoupleLens account:\n\n1️⃣ Sign up at the CoupleLens website\n2️⃣ Go to Dashboard → *Link Bot*\n3️⃣ Send your code here",
+          "💑 *Welcome to CoupleLens!*\n\nI'm your AI relationship assistant.\n\nTo link your account:\n\n1️⃣ Sign up at the CoupleLens website\n2️⃣ Go to Dashboard → *Link Bot*\n3️⃣ Paste your Chat ID and click Send Link#{chat_id_text}",
           [[{ text: "🔗 I Have a Link Code", callback_data: "/link" }]]
         )
       end
@@ -793,6 +895,12 @@ class MessagingBotService
     conversation.messages.create!(role: "assistant", content: response)
 
     response
+  rescue Faraday::TooManyRequestsError => e
+    Rails.logger.warn("Gemini 429 rate limit in chat via #{@platform}, retrying...")
+    sleep(2)
+    retry_response = @gemini.chat(chat_messages, language: conversation.language || "english")
+    conversation.messages.create!(role: "assistant", content: retry_response)
+    retry_response
   rescue StandardError => e
     Rails.logger.error("Chat error via #{@platform}: #{e.message}")
     "I'm sorry, I'm having trouble right now. Please try again in a moment."
@@ -866,12 +974,14 @@ class MessagingBotService
   end
 
   def active_conversation(user)
-    conversation = user.conversations.where(status: :active).order(updated_at: :desc).first
+    conversation = user.conversations.where(status: :active, platform: @platform.to_s)
+                                     .order(updated_at: :desc).first
 
     unless conversation
       conversation = user.conversations.create!(
         title: "#{@platform.to_s.capitalize} Bot #{Time.current.strftime('%b %d')}",
-        status: :active
+        status: :active,
+        platform: @platform.to_s
       )
     end
 
@@ -921,15 +1031,33 @@ class MessagingBotService
     else
       {
         type: :list,
-        header: "🤖 Pick an Agent First",
-        body: "You need to select an AI agent before chatting.\nEach agent has a different style:",
-        button_text: "🤖 Choose Agent",
+        header: "🤖 Pick an Agent to Start",
+        body: "You need to select an AI agent before chatting.\n\nChoose an agent or explore other features:",
+        button_text: "📋 Menu",
         sections: [
           {
-            title: "AI Agents",
+            title: "🤖 AI Agents",
             rows: AGENTS.map { |key, agent|
               { id: "/agent #{key}", title: agent[:name], description: agent[:description] }
             }
+          },
+          {
+            title: "✏️ Communication Tools",
+            rows: [
+              { id: "/rewrite", title: "✏️ Rewrite Message", description: "Rewrite a heated message calmly" }
+            ]
+          },
+          {
+            title: "⚖️ Conflict Resolution",
+            rows: [
+              { id: "/mediate", title: "⚖️ Start Mediation", description: "Begin a conflict mediation session" }
+            ]
+          },
+          {
+            title: "⚙️ Settings",
+            rows: [
+              { id: "/language", title: "🌐 Language", description: "Switch between English & Hindi" }
+            ]
           }
         ]
       }

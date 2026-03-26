@@ -1,5 +1,10 @@
 Rails.application.routes.draw do
-  devise_for :users
+  devise_for :users, controllers: { sessions: "users/sessions", registrations: "users/registrations" }
+
+  # OTP verification routes (outside Devise scope)
+  get  "users/otp/verify",  to: "users/otp#verify",  as: :users_otp_verify
+  post "users/otp/confirm", to: "users/otp#confirm", as: :users_otp_confirm
+  post "users/otp/resend",  to: "users/otp#resend",  as: :users_otp_resend
 
   # Root
   root 'pages#home'
@@ -7,6 +12,8 @@ Rails.application.routes.draw do
   # Dashboard
   get 'dashboard', to: 'dashboard#show'
   post 'dashboard/generate_bot_link_code', to: 'dashboard#generate_bot_link_code', as: :generate_bot_link_code
+  post 'dashboard/send_link_invitation', to: 'dashboard#send_link_invitation', as: :send_link_invitation
+  post 'dashboard/generate_telegram_link', to: 'dashboard#generate_telegram_link', as: :generate_telegram_link
 
   # AI Relationship Assistant
   resources :conversations, only: [:index, :show, :new, :create, :destroy] do
@@ -26,6 +33,7 @@ Rails.application.routes.draw do
 
   # Health Dashboard
   get 'health', to: 'health_dashboard#show'
+  post 'health/calculate', to: 'health_dashboard#calculate', as: :calculate_health
 
   # Compatibility Assessment
   resources :compatibility_assessments, only: [:index, :show, :new, :create]

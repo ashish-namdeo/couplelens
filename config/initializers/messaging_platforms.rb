@@ -6,6 +6,7 @@ Rails.application.config.webhook_base_url = ENV.fetch("WEBHOOK_BASE_URL", "")
 
 # Telegram Bot
 Rails.application.config.telegram_bot_token = ENV.fetch("TELEGRAM_BOT_TOKEN", "")
+Rails.application.config.telegram_bot_username = ENV.fetch("TELEGRAM_BOT_USERNAME", "Couplelens_relationship_bot")
 
 # WhatsApp Cloud API (Meta)
 Rails.application.config.whatsapp_verify_token = ENV.fetch("WHATSAPP_VERIFY_TOKEN", "")

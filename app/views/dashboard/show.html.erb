@@ -88,6 +88,58 @@
           </div>
         <% end %>
       </div>
+
+      <!-- Telegram Conversations -->
+      <% if @telegram_conversations.any? %>
+        <div class="glass-card-static p-4 mb-4">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0"><span class="me-2">✈️</span>Telegram Conversations</h5>
+            <span class="badge" style="background: rgba(0, 136, 204, 0.2); color: #0088cc;"><%= @telegram_conversations.size %> chats</span>
+          </div>
+          <% @telegram_conversations.each do |conv| %>
+            <%= link_to conv, class: 'glass-card p-3 mb-2 d-block text-decoration-none' do %>
+              <div class="d-flex align-items-center justify-content-between">
+                <div>
+                  <span class="me-2"><%= conv.persona_icon %></span>
+                  <span class="fw-bold"><%= conv.title %></span>
+                  <span class="badge-glass ms-2"><%= conv.persona_display_name %></span>
+                  <span class="badge ms-1" style="background: rgba(0, 136, 204, 0.15); color: #0088cc; font-size: 0.7rem;">Telegram</span>
+                </div>
+                <div class="text-end">
+                  <small class="text-muted d-block"><%= conv.messages.count %> msgs</small>
+                  <small class="text-muted"><%= time_ago_in_words(conv.updated_at) %> ago</small>
+                </div>
+              </div>
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
+
+      <!-- WhatsApp Conversations -->
+      <% if @whatsapp_conversations.any? %>
+        <div class="glass-card-static p-4 mb-4">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0"><span class="me-2">📱</span>WhatsApp Conversations</h5>
+            <span class="badge" style="background: rgba(37, 211, 102, 0.2); color: #25D366;"><%= @whatsapp_conversations.size %> chats</span>
+          </div>
+          <% @whatsapp_conversations.each do |conv| %>
+            <%= link_to conv, class: 'glass-card p-3 mb-2 d-block text-decoration-none' do %>
+              <div class="d-flex align-items-center justify-content-between">
+                <div>
+                  <span class="me-2"><%= conv.persona_icon %></span>
+                  <span class="fw-bold"><%= conv.title %></span>
+                  <span class="badge-glass ms-2"><%= conv.persona_display_name %></span>
+                  <span class="badge ms-1" style="background: rgba(37, 211, 102, 0.15); color: #25D366; font-size: 0.7rem;">WhatsApp</span>
+                </div>
+                <div class="text-end">
+                  <small class="text-muted d-block"><%= conv.messages.count %> msgs</small>
+                  <small class="text-muted"><%= time_ago_in_words(conv.updated_at) %> ago</small>
+                </div>
+              </div>
+            <% end %>
+          <% end %>
+        </div>
+      <% end %>
     </div>
 
     <!-- Sidebar -->
@@ -105,9 +157,28 @@
               <span class="badge-glass">✈️ Telegram</span>
             <% end %>
           </div>
-          <p class="text-muted small mb-2">Your bot account is linked. You can use CoupleLens via messaging apps.</p>
+          <p class="text-muted small mb-3">Your bot account is linked. You can use CoupleLens via messaging apps.</p>
+
+          <!-- Link another platform -->
+          <% unless current_user.whatsapp_id.present? %>
+            <div class="mb-2">
+              <div class="input-group input-group-sm">
+                <input type="text" id="wa-phone" class="form-control" placeholder="WhatsApp number (e.g. 919876543210)" style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #fff;">
+                <button class="btn btn-sm" style="background: rgba(37, 211, 102, 0.2); color: #25D366;" onclick="sendLinkInvitation('whatsapp')">📱 Send Link</button>
+              </div>
+            </div>
+          <% end %>
+          <% unless current_user.telegram_id.present? %>
+            <div class="mb-2">
+              <button class="btn btn-sm w-100" style="background: rgba(0, 136, 204, 0.2); color: #0088cc;" onclick="linkViaTelegram()">✈️ Link Telegram Account</button>
+            </div>
+          <% end %>
+
+          <div id="link-invitation-result" class="mb-2" style="display: none;"></div>
+
+          <hr style="border-color: rgba(255,255,255,0.1);">
           <button class="btn btn-sm btn-outline-glass w-100" id="generate-link-code-btn" onclick="generateLinkCode()">
-            🔗 Generate New Link Code
+            🔗 Or Use Link Code
           </button>
           <div id="link-code-display" class="mt-2" style="display: none;">
             <div class="glass-card p-3 text-center">
@@ -118,9 +189,29 @@
             </div>
           </div>
         <% else %>
-          <p class="text-muted small mb-2">Connect your WhatsApp or Telegram to use CoupleLens as a chatbot.</p>
+          <p class="text-muted small mb-3">Connect your WhatsApp or Telegram to use CoupleLens as a chatbot.</p>
+
+          <!-- Send link invitation -->
+          <div class="mb-2">
+            <label class="text-muted small mb-1 d-block">📱 WhatsApp</label>
+            <div class="input-group input-group-sm">
+              <input type="text" id="wa-phone" class="form-control" placeholder="Phone (e.g. 919876543210)" style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #fff;">
+              <button class="btn btn-sm" style="background: rgba(37, 211, 102, 0.2); color: #25D366;" onclick="sendLinkInvitation('whatsapp')">Send Link</button>
+            </div>
+            <div class="text-muted" style="font-size: 0.65rem;" class="mt-1">Must have messaged the bot first</div>
+          </div>
+
+          <div class="mb-3">
+            <label class="text-muted small mb-1 d-block">✈️ Telegram</label>
+            <button class="btn btn-sm w-100" style="background: rgba(0, 136, 204, 0.2); color: #0088cc;" onclick="linkViaTelegram()">✈️ Link via Telegram</button>
+            <div class="text-muted" style="font-size: 0.65rem;">Opens Telegram and links automatically</div>
+          </div>
+
+          <div id="link-invitation-result" class="mb-2" style="display: none;"></div>
+
+          <hr style="border-color: rgba(255,255,255,0.1);">
           <button class="btn btn-sm btn-outline-glass w-100" id="generate-link-code-btn" onclick="generateLinkCode()">
-            🔗 Generate Link Code
+            🔗 Or Use Link Code Instead
           </button>
           <div id="link-code-display" class="mt-2" style="display: none;">
             <div class="glass-card p-3 text-center">
@@ -195,6 +286,91 @@
 </div>
 
 <script>
+  function sendLinkInvitation(platform) {
+    var params = {};
+    var btn;
+
+    if (platform === 'whatsapp') {
+      var phone = document.getElementById('wa-phone').value.trim();
+      if (!phone) { alert('Please enter a WhatsApp phone number'); return; }
+      params = { platform: 'whatsapp', phone_number: phone };
+      btn = document.getElementById('wa-phone').nextElementSibling || event.target;
+    } else {
+      var chatId = document.getElementById('tg-chat-id').value.trim();
+      if (!chatId) { alert('Please enter a Telegram Chat ID'); return; }
+      params = { platform: 'telegram', telegram_chat_id: chatId };
+      btn = document.getElementById('tg-chat-id').nextElementSibling || event.target;
+    }
+
+    var originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Sending...';
+
+    fetch('<%= send_link_invitation_path %>', {
+      method: 'POST',
+      headers: {
+        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(params)
+    })
+    .then(function(response) { return response.json(); })
+    .then(function(data) {
+      var resultDiv = document.getElementById('link-invitation-result');
+      if (resultDiv) {
+        resultDiv.style.display = 'block';
+        if (data.success) {
+          resultDiv.innerHTML = '<div class="alert alert-success py-1 px-2 small mb-0">✅ ' + data.message + '</div>';
+        } else {
+          resultDiv.innerHTML = '<div class="alert alert-danger py-1 px-2 small mb-0">❌ ' + data.message + '</div>';
+        }
+      } else {
+        alert(data.success ? '✅ ' + data.message : '❌ ' + data.message);
+      }
+      btn.textContent = originalText;
+      btn.disabled = false;
+    })
+    .catch(function() {
+      btn.textContent = '❌ Error';
+      setTimeout(function() { btn.textContent = originalText; btn.disabled = false; }, 2000);
+    });
+  }
+
+  function linkViaTelegram() {
+    var btn = event.target;
+    var originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Generating link...';
+
+    fetch('<%= generate_telegram_link_path %>', {
+      method: 'POST',
+      headers: {
+        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
+        'Accept': 'application/json'
+      }
+    })
+    .then(function(response) { return response.json(); })
+    .then(function(data) {
+      if (data.success) {
+        window.open(data.link, '_blank');
+        var resultDiv = document.getElementById('link-invitation-result');
+        if (resultDiv) {
+          resultDiv.style.display = 'block';
+          resultDiv.innerHTML = '<div class="alert alert-info py-1 px-2 small mb-0">✈️ Telegram opened! Tap <strong>Start</strong> to link your account, then refresh this page.</div>';
+        }
+      } else {
+        alert('Failed to generate link. Please try again.');
+      }
+      btn.textContent = originalText;
+      btn.disabled = false;
+    })
+    .catch(function() {
+      btn.textContent = '❌ Error';
+      setTimeout(function() { btn.textContent = originalText; btn.disabled = false; }, 2000);
+    });
+  }
+
   function generateLinkCode() {
     var btn = document.getElementById('generate-link-code-btn');
     btn.disabled = true;

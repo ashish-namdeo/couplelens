@@ -10,7 +10,13 @@ class Conversation < ApplicationRecord
     communication_expert: 'communication_expert'
   }
 
+  PLATFORMS = %w[web telegram whatsapp].freeze
+
   validates :title, presence: true
+  validates :platform, inclusion: { in: PLATFORMS }, allow_nil: true
+
+  scope :by_platform, ->(platform) { where(platform: platform) }
+  scope :from_messaging, -> { where(platform: %w[telegram whatsapp]) }
 
   after_initialize :set_defaults, if: :new_record?
 
@@ -32,6 +38,7 @@ class Conversation < ApplicationRecord
 
   def set_defaults
     self.status ||= :active
-    self.persona ||= :empathetic_listener
+    # Only auto-assign agent for web conversations; messaging users should pick their own
+    self.persona ||= :empathetic_listener unless platform.in?(%w[telegram whatsapp])
   end
 end

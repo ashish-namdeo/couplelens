@@ -1,0 +1,78 @@
+<div class="devise-form animate-fade-in">
+  <div class="text-center mb-4">
+    <h2 class="fw-bold">Verify Your <span class="gradient-text">Identity</span></h2>
+    <p class="text-muted">We sent a 6-digit OTP to <strong><%= @user.email %></strong></p>
+  </div>
+
+  <div class="glass-card-static">
+    <div class="p-4">
+      <%= form_tag(users_otp_confirm_path, method: :post) do %>
+        <div class="mb-3">
+          <label for="otp_code" class="form-label">Enter OTP</label>
+          <input type="text" name="otp_code" id="otp_code" class="form-control text-center"
+                 placeholder="••••••" maxlength="6" pattern="\d{6}"
+                 inputmode="numeric" autocomplete="one-time-code" autofocus
+                 style="font-size: 1.5rem; letter-spacing: 0.5rem; font-weight: bold;" />
+        </div>
+
+        <div class="mb-3">
+          <button type="submit" id="verify-btn" class="btn btn-gradient w-100 btn-lg" disabled>🔐 Verify OTP</button>
+        </div>
+      <% end %>
+
+      <div class="text-center mt-3">
+        <p class="text-muted small mb-2">Didn't receive the code?</p>
+        <% seconds_left = @user.otp_sent_at ? [60 - (Time.current - @user.otp_sent_at).to_i, 0].max : 0 %>
+        <%= form_tag(users_otp_resend_path, method: :post, class: 'd-inline', id: 'resend-form') do %>
+          <button type="submit" id="resend-btn" class="btn btn-link text-decoration-none gradient-text p-0"
+                  <%= 'disabled' if seconds_left > 0 %>>
+            <span id="resend-text">Resend OTP</span>
+            <span id="resend-timer" class="text-muted"><%= "(#{seconds_left}s)" if seconds_left > 0 %></span>
+          </button>
+        <% end %>
+      </div>
+
+      <div class="text-center mt-2">
+        <%= link_to "← Back to Sign In", new_user_session_path, class: 'text-muted small text-decoration-none' %>
+      </div>
+
+      <script data-turbo-eval="true">
+        document.addEventListener('turbo:load', initOtpPage);
+        document.addEventListener('DOMContentLoaded', initOtpPage);
+        initOtpPage();
+
+        function initOtpPage() {
+          var otpInput = document.getElementById('otp_code');
+          var verifyBtn = document.getElementById('verify-btn');
+          var resendBtn = document.getElementById('resend-btn');
+          var resendTimer = document.getElementById('resend-timer');
+
+          if (!otpInput || !verifyBtn) return;
+
+          // Enable verify button only when 6 digits entered
+          otpInput.addEventListener('input', function() {
+            var val = this.value.replace(/\D/g, '');
+            this.value = val;
+            verifyBtn.disabled = val.length !== 6;
+          });
+
+          // Resend countdown
+          var timeLeft = parseInt('<%= seconds_left %>', 10) || 0;
+          if (timeLeft > 0 && resendBtn && resendTimer) {
+            resendBtn.disabled = true;
+            var interval = setInterval(function() {
+              timeLeft--;
+              if (timeLeft <= 0) {
+                clearInterval(interval);
+                resendBtn.disabled = false;
+                resendTimer.textContent = '';
+              } else {
+                resendTimer.textContent = '(' + timeLeft + 's)';
+              }
+            }, 1000);
+          }
+        }
+      </script>
+    </div>
+  </div>
+</div>
