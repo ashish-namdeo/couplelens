@@ -1,7 +1,7 @@
 source "https://rubygems.org"
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby ">= 3.0.0"
+ruby "3.3.0"
 
 # Fix psych 5.x native compilation failure on Vercel (libyaml not available)
 gem "psych", "~> 4.0"
