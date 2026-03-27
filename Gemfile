@@ -69,6 +69,9 @@ gem "dotenv-rails", groups: [:development, :test]
 gem "telegram-bot-ruby"
 gem "httparty"
 
+# Email via Resend API (HTTP, bypasses SMTP port blocks)
+gem "resend"
+
 # Charts & Analytics
 gem "chartkick"
 gem "groupdate"
