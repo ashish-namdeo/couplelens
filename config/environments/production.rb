@@ -69,12 +69,14 @@ Rails.application.configure do
   config.action_mailer.default_url_options = { host: ENV["APP_HOST"] }
   config.action_mailer.smtp_settings = {
     address: "smtp.gmail.com",
-    port: 587,
+    port: 465,
     domain: ENV["APP_HOST"],
     user_name: ENV["GMAIL_USERNAME"],
     password: ENV["GMAIL_APP_PASSWORD"],
     authentication: :plain,
-    enable_starttls_auto: true
+    ssl: true,
+    open_timeout: 10,
+    read_timeout: 10
   }
 
   # Enable locale fallbacks for I18n (makes lookups for any locale fall back to

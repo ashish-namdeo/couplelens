@@ -6,7 +6,7 @@ class Users::SessionsController < Devise::SessionsController
       # Generate and send OTP
       otp = SecureRandom.random_number(100_000..999_999).to_s
       user.update!(otp_code: otp, otp_sent_at: Time.current, otp_verified: false)
-      OtpMailer.send_otp(user).deliver_now
+      OtpMailer.send_otp(user).deliver_later
 
       # Store user ID in session for OTP verification step
       session[:otp_user_id] = user.id
