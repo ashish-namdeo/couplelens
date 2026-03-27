@@ -1,7 +1,7 @@
 source "https://rubygems.org"
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby "3.3.0"
+ruby "3.1.0"
 
 # Fix psych 5.x native compilation failure on Vercel (libyaml not available)
 gem "psych", "~> 4.0"
@@ -69,8 +69,8 @@ gem "dotenv-rails", groups: [:development, :test]
 gem "telegram-bot-ruby"
 gem "httparty"
 
-# Email via Resend API (HTTP, bypasses SMTP port blocks)
-gem "resend"
+# Email via Brevo API (HTTP, bypasses SMTP port blocks)
+# Uses HTTParty for API calls (already included)
 
 # Charts & Analytics
 gem "chartkick"
@@ -89,7 +89,7 @@ group :development do
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem "web-console"
 
-  # Preview emails in browser instead of sending
+  # Preview emails in browser instead of sending (auto-opens in new tab)
   gem "letter_opener"
 
   # Add speed badges [https://github.com/MiniProfiler/rack-mini-profiler]

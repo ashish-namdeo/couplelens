@@ -75,19 +75,9 @@ class Users::OtpController < ApplicationController
   end
 
   def send_otp_email(user)
-    html = ApplicationController.renderer.render(
-      template: "otp_mailer/send_otp",
-      layout: "mailer",
-      assigns: { user: user, otp_code: user.otp_code }
-    )
-    Thread.new do
-      ResendEmailService.send_email(
-        to: user.email,
-        subject: "Your CoupleLens Login OTP",
-        html: html
-      )
-    rescue => e
-      Rails.logger.error("OTP email failed: #{e.message}")
-    end
+    # Use ActionMailer which respects environment settings (letter_opener in dev, Brevo in prod)
+    OtpMailer.send_otp(user).deliver_now
+  rescue => e
+    Rails.logger.error("OTP email failed: #{e.message}")
   end
 end

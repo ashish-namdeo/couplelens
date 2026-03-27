@@ -265,8 +265,6 @@ GEM
       connection_pool
     reline (0.6.3)
       io-console (~> 0.5)
-    resend (1.0.1)
-      httparty (>= 0.21.0)
     responders (3.2.0)
       actionpack (>= 7.0)
       railties (>= 7.0)
@@ -344,7 +342,6 @@ DEPENDENCIES
   puma (>= 5.0)
   rails (~> 7.0.10)
   redis
-  resend
   ruby-openai
   sidekiq
   sprockets-rails
@@ -355,7 +352,7 @@ DEPENDENCIES
   web-console
 
 RUBY VERSION
-   ruby 3.3.0p0
+   ruby 3.1.0p0
 
 BUNDLED WITH
    2.2.3

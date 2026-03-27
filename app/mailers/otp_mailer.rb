@@ -1,5 +1,5 @@
 class OtpMailer < ApplicationMailer
-  default from: ENV.fetch("RESEND_FROM_EMAIL", "onboarding@resend.dev")
+  default from: ENV.fetch("BREVO_FROM_EMAIL", "noreply@sendinblue.com")
 
   def send_otp(user)
     @user = user

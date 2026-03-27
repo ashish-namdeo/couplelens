@@ -3,9 +3,7 @@ require "active_support/core_ext/integer/time"
 Rails.application.configure do
   # Settings specified here will take precedence over those in config/application.rb.
   
-  # Allow ngrok tunneling
-  config.hosts << "eb9a-2401-4900-8822-5328-dcb5-5bd6-7fa5-7074.ngrok-free.app"
-
+  
   # In the development environment your application's code is reloaded any time
   # it changes. This slows down response time but is perfect for development
   # since you don't have to restart the web server when you make code changes.
@@ -44,7 +42,7 @@ Rails.application.configure do
 
   config.action_mailer.perform_caching = false
 
-  # Use letter_opener to preview emails in browser (no real SMTP needed)
+  # Use letter_opener to auto-open emails in browser (new tab)
   config.action_mailer.delivery_method = :letter_opener
   config.action_mailer.perform_deliveries = true
 
