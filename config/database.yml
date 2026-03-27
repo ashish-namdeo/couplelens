@@ -81,6 +81,8 @@ test:
 #
 production:
   <<: *default
-  database: couple_lens_production
-  username: couple_lens
+  database: <%= ENV["COUPLE_LENS_DATABASE_NAME"] %>
+  username: <%= ENV["COUPLE_LENS_DATABASE_USERNAME"] %>
   password: <%= ENV["COUPLE_LENS_DATABASE_PASSWORD"] %>
+  host: <%= ENV["COUPLE_LENS_DATABASE_HOST"] %>
+  port: <%= ENV["COUPLE_LENS_DATABASE_PORT"] %>
