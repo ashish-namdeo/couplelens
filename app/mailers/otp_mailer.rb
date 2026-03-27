@@ -1,5 +1,5 @@
 class OtpMailer < ApplicationMailer
-  default from: "noreply@couplelens.com"
+  default from: ENV.fetch("GMAIL_USERNAME", "noreply@couplelens.com")
 
   def send_otp(user)
     @user = user

@@ -63,7 +63,7 @@ class Users::OtpController < ApplicationController
 
     otp = SecureRandom.random_number(100_000..999_999).to_s
     user.update!(otp_code: otp, otp_sent_at: Time.current, otp_verified: false)
-    OtpMailer.send_otp(user).deliver_now
+    OtpMailer.send_otp(user).deliver_later
 
     redirect_to users_otp_verify_path, notice: "A new OTP has been sent to your email.", status: :see_other
   end
