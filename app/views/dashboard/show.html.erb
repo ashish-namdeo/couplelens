@@ -191,39 +191,37 @@
         <% else %>
           <p class="text-muted small mb-3">Connect your WhatsApp or Telegram to use CoupleLens as a chatbot.</p>
 
-          <!-- Send link invitation -->
-          <div class="mb-2">
+          <!-- WhatsApp Link - Instant Code Method -->
+          <div class="mb-3">
             <label class="text-muted small mb-1 d-block">📱 WhatsApp</label>
-            <div class="input-group input-group-sm">
-              <input type="text" id="wa-phone" class="form-control" placeholder="Phone (e.g. 919876543210)" style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #fff;">
-              <button class="btn btn-sm" style="background: rgba(37, 211, 102, 0.2); color: #25D366;" onclick="sendLinkInvitation('whatsapp')">Send Link</button>
+            <div class="input-group input-group-sm mb-2">
+              <input type="text" id="wa-phone-number" class="form-control" placeholder="Enter your phone (e.g. 919876543210)" style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #fff;">
+              <button class="btn btn-sm" style="background: rgba(37, 211, 102, 0.2); color: #25D366;" onclick="generateWhatsAppLink()">📱 Get Link Code</button>
             </div>
-            <div class="text-muted" style="font-size: 0.65rem;" class="mt-1">Must have messaged the bot first</div>
+            <div id="wa-link-display" class="glass-card p-3" style="display: none;">
+              <div class="text-center mb-2">
+                <div class="text-muted small">Your link code:</div>
+                <div class="fw-bold gradient-text" style="font-size: 1.3rem; letter-spacing: 2px;" id="wa-code-value"></div>
+                <div class="text-muted" style="font-size: 0.7rem;">Expires in 30 minutes</div>
+              </div>
+              <div class="alert alert-success py-2 px-3 small mb-2" style="background: rgba(25, 135, 84, 0.1); border-color: rgba(25, 135, 84, 0.3);">
+                <strong>📲 Easy Way:</strong><br>
+                Click the button below - WhatsApp will open automatically with everything ready!
+              </div>
+              <button class="btn btn-sm w-100 mb-2" style="background: rgba(37, 211, 102, 0.4); color: #25D366; font-weight: bold;" onclick="openWhatsAppChat()">
+                💬 Open WhatsApp & Send
+              </button>
+              <div class="text-muted text-center" style="font-size: 0.65rem;">
+                Or manually message the bot with: <code>/link <span id="wa-code-copy"></span></code>
+              </div>
+            </div>
           </div>
 
           <div class="mb-3">
             <label class="text-muted small mb-1 d-block">✈️ Telegram</label>
             <button class="btn btn-sm w-100" style="background: rgba(0, 136, 204, 0.2); color: #0088cc;" onclick="linkViaTelegram()">✈️ Link via Telegram</button>
-            <div class="text-muted" style="font-size: 0.65rem;">Opens Telegram and links automatically</div>
+            <div class="text-muted" style="font-size: 0.65rem; margin-top: 0.25rem;">Opens Telegram and links automatically</div>
           </div>
-
-          <div id="link-invitation-result" class="mb-2" style="display: none;"></div>
-
-          <hr style="border-color: rgba(255,255,255,0.1);">
-          <button class="btn btn-sm btn-outline-glass w-100" id="generate-link-code-btn" onclick="generateLinkCode()">
-            🔗 Or Use Link Code Instead
-          </button>
-          <div id="link-code-display" class="mt-2" style="display: none;">
-            <div class="glass-card p-3 text-center">
-              <div class="text-muted small">Your link code:</div>
-              <div class="fw-bold gradient-text" style="font-size: 1.5rem; letter-spacing: 2px;" id="link-code-value"></div>
-              <div class="text-muted" style="font-size: 0.75rem;">Expires in 30 minutes</div>
-              <div class="text-muted small mt-2">
-                <strong>Steps:</strong><br>
-                1. Message the CoupleLens bot on WhatsApp/Telegram<br>
-                2. Send: <code>/link <span id="link-code-copy"></span></code>
-              </div>
-            </div>
           </div>
         <% end %>
       </div>
@@ -321,12 +319,16 @@
       if (resultDiv) {
         resultDiv.style.display = 'block';
         if (data.success) {
-          resultDiv.innerHTML = '<div class="alert alert-success py-1 px-2 small mb-0">✅ ' + data.message + '</div>';
+          resultDiv.innerHTML = '<div class="alert alert-success py-2 px-3 small mb-0" style="background: rgba(25, 135, 84, 0.1); border-color: rgba(25, 135, 84, 0.3); color: #75b798;">✅ ' + data.message + '</div>';
         } else {
-          resultDiv.innerHTML = '<div class="alert alert-danger py-1 px-2 small mb-0">❌ ' + data.message + '</div>';
+          resultDiv.innerHTML = '<div class="alert alert-warning py-2 px-3 small mb-0" style="background: rgba(255, 193, 7, 0.1); border-color: rgba(255, 193, 7, 0.3); color: #ffc107;">' + 
+            '<strong>💡 Try Link Code Instead:</strong><br>' + 
+            '<span class="text-muted" style="font-size: 0.85rem;">' + data.message + '</span><br>' +
+            '<button class="btn btn-sm mt-2" style="background: rgba(255, 255, 255, 0.15); color: #fff;" onclick="generateLinkCode(); document.getElementById(\'link-invitation-result\').style.display=\'none\';">Generate Link Code</button>' +
+            '</div>';
         }
       } else {
-        alert(data.success ? '✅ ' + data.message : '❌ ' + data.message);
+        alert(data.success ? '✅ ' + data.message : '💡 ' + data.message);
       }
       btn.textContent = originalText;
       btn.disabled = false;
@@ -396,5 +398,67 @@
       btn.textContent = '❌ Error. Try again.';
       btn.disabled = false;
     });
+  }
+
+  // New WhatsApp-specific link code generation
+  var currentWhatsAppCode = null;
+  var currentWhatsAppPhone = null;
+
+  function generateWhatsAppLink() {
+    var phoneInput = document.getElementById('wa-phone-number');
+    var phone = phoneInput.value.trim();
+    
+    if (!phone) {
+      alert('Please enter a phone number');
+      return;
+    }
+
+    var btn = event.target;
+    var originalText = btn.textContent;
+    btn.disabled = true;
+    btn.textContent = 'Generating...';
+
+    fetch('<%= generate_bot_link_code_path %>', {
+      method: 'POST',
+      headers: {
+        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content,
+        'Accept': 'application/json'
+      }
+    })
+    .then(function(response) { return response.json(); })
+    .then(function(data) {
+      currentWhatsAppCode = data.code;
+      currentWhatsAppPhone = phone;
+      
+      document.getElementById('wa-code-value').textContent = data.code;
+      var copyEl = document.getElementById('wa-code-copy');
+      if (copyEl) copyEl.textContent = data.code;
+      document.getElementById('wa-link-display').style.display = 'block';
+      
+      btn.textContent = originalText;
+      btn.disabled = false;
+    })
+    .catch(function() {
+      btn.textContent = '❌ Error';
+      setTimeout(function() { btn.textContent = originalText; btn.disabled = false; }, 2000);
+    });
+  }
+
+  function openWhatsAppChat() {
+    <% bot_phone = ENV['WHATSAPP_DISPLAY_PHONE'] %>
+    <% if bot_phone.present? && bot_phone != '+1234567890' %>
+      var botNumber = '<%= bot_phone.gsub(/[^\d]/, '') %>';
+    <% else %>
+      var botNumber = ''; 
+    <% end %>
+    
+    if (!botNumber) {
+      alert('⚠️ WhatsApp bot number not configured yet.\n\nPlease:\n1. Find your bot number in Meta Developer Dashboard\n2. Add it to .env as WHATSAPP_DISPLAY_PHONE=+15551595614\n3. Restart the server\n\nFor now, manually message the bot with: /link ' + currentWhatsAppCode);
+      return;
+    }
+
+    var message = encodeURIComponent('/link ' + currentWhatsAppCode);
+    var whatsappUrl = 'https://wa.me/' + botNumber + '?text=' + message;
+    window.open(whatsappUrl, '_blank');
   }
 </script>

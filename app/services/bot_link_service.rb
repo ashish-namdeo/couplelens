@@ -8,8 +8,8 @@ class BotLinkService
     phone = sanitize_phone(phone_number)
     return { success: false, error: "Invalid phone number" } if phone.blank?
 
-    token = Rails.application.config.whatsapp_access_token
-    phone_number_id = Rails.application.config.whatsapp_phone_number_id
+    token = ENV['WHATSAPP_ACCESS_TOKEN']
+    phone_number_id = ENV['WHATSAPP_PHONE_NUMBER_ID']
 
     if token.blank? || phone_number_id.blank?
       return { success: false, error: "WhatsApp not configured" }
@@ -50,13 +50,17 @@ class BotLinkService
     if result["error"]
       Rails.logger.error("WhatsApp link invitation error: #{result['error']['message']}")
       error_msg = if result["error"]["code"] == 131030
-                    "This number hasn't messaged the CoupleLens bot yet. Please send 'hi' to the bot first, then try again."
+                    "Unable to send - this number hasn't messaged the bot yet. Have them send 'hi' to the bot first, or use the Link Code method below."
+                  elsif result["error"]["code"] == 131026
+                    "Invalid phone number format. Use format: 919876543210 (country code + number, no + or spaces)"
+                  elsif result["error"]["code"] == 131047
+                    "This number needs to message the bot first, or try using the Link Code method below."
                   else
-                    result["error"]["message"]
+                    result['error']['message']
                   end
       { success: false, error: error_msg }
     else
-      { success: true, message: "Link invitation sent to WhatsApp! Check your messages and tap Confirm." }
+      { success: true, message: "✅ Link sent! They should receive it on WhatsApp shortly." }
     end
   rescue StandardError => e
     Rails.logger.error("WhatsApp link service error: #{e.message}")
@@ -68,7 +72,7 @@ class BotLinkService
     chat_id = telegram_username_or_id.to_s.strip.delete("@")
     return { success: false, error: "Please enter a valid Telegram chat ID" } if chat_id.blank?
 
-    token = Rails.application.config.telegram_bot_token
+    token = ENV['TELEGRAM_BOT_TOKEN']
     return { success: false, error: "Telegram bot not configured" } if token.blank?
 
     # Store pending link info

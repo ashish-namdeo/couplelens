@@ -53,7 +53,13 @@ class MessagingBotService
     end
 
     if text == "reject_link"
-      return "❌ Link request cancelled. No changes were made."
+      if @platform == :telegram
+        return telegram_reply(
+          "❌ *Link Cancelled*\n\nNo changes were made to your account.\n\nYou can try linking again anytime by typing `/link CODE` with a valid link code from your dashboard.",
+          [[{ text: "ℹ️ Get Link Code Instructions", callback_data: "/link" }]]
+        )
+      end
+      return "❌ Link cancelled. No changes were made.\n\nYou can try again anytime by typing `/link CODE` with a valid link code from your dashboard."
     end
 
     command, args = parse_command(text)
@@ -78,7 +84,13 @@ class MessagingBotService
     end
 
     if command == "/reject_link"
-      return "❌ Link request cancelled. No changes were made."
+      if @platform == :telegram
+        return telegram_reply(
+          "❌ *Link Cancelled*\n\nNo changes were made to your account.\n\nYou can try linking again anytime by typing `/link CODE` with a valid link code from your dashboard.",
+          [[{ text: "ℹ️ Get Link Code Instructions", callback_data: "/link" }]]
+        )
+      end
+      return "❌ Link cancelled. No changes were made.\n\nYou can try again anytime by typing `/link CODE` with a valid link code from your dashboard."
     end
 
     # All other commands require a linked account
@@ -228,33 +240,36 @@ class MessagingBotService
       return "❌ This link code has expired. Please generate a new one from your CoupleLens dashboard."
     end
 
-    # Clear any old bot-created account that holds this platform ID
-    field = platform_field
-    old_user = User.where(field => platform_user_id.to_s).where.not(id: user.id).first
-    if old_user && old_user.email&.end_with?("@couplelens.bot")
-      old_user.destroy
-    elsif old_user
-      old_user.update!(field => nil)
-    end
-
-    # Link the platform account
-    user.update!(
-      field => platform_user_id.to_s,
-      bot_link_code: nil,
-      bot_link_code_expires_at: nil
-    )
-
+    # Send confirmation message instead of directly linking
     if @platform == :telegram
       return telegram_reply(
-        "✅ *Account linked successfully!*\n\nWelcome, #{user.first_name}! 🎉\nYou now have full access to CoupleLens bot.",
+        "🔗 *Link Account Confirmation*\n\n" \
+        "You're about to link this Telegram account to:\n" \
+        "👤 *#{user.first_name} #{user.last_name}*\n" \
+        "📧 #{user.email}\n\n" \
+        "Once linked, you'll have full access to CoupleLens features via this chat.\n\n" \
+        "Do you want to proceed?",
         [
-          [{ text: "📋 Show Menu", callback_data: "/help" }],
-          [{ text: "✏️ Rewrite a Message", callback_data: "/rewrite" }]
+          [{ text: "✅ Yes, Link Account", callback_data: "confirm_link_#{user.id}" }],
+          [{ text: "❌ Cancel", callback_data: "reject_link" }]
         ]
       )
+    else
+      # WhatsApp
+      {
+        type: :buttons,
+        header: "🔗 Link Account",
+        body: "You're about to link this WhatsApp to:\n\n" \
+              "👤 *#{user.first_name} #{user.last_name}*\n" \
+              "📧 #{user.email}\n\n" \
+              "Once linked, you'll have full access to CoupleLens features.\n\n" \
+              "Do you want to proceed?",
+        buttons: [
+          { id: "confirm_link_#{user.id}", title: "✅ Yes, Link" },
+          { id: "reject_link", title: "❌ Cancel" }
+        ]
+      }
     end
-
-    "✅ Account linked successfully! Welcome, #{user.first_name}! 🎉\n\nYou now have full access to CoupleLens bot. Type /help to see all features."
   end
 
   def handle_confirm_link(platform_user_id, args)
@@ -265,10 +280,10 @@ class MessagingBotService
       return "❌ Link request not found or expired."
     end
 
-    # Verify pending link code exists and is not expired
-    unless user.bot_link_code&.start_with?("WA-LINK-", "TG-LINK-") &&
-           user.bot_link_code_expires_at && user.bot_link_code_expires_at > Time.current
-      return "❌ This link request has expired. Please try again from the CoupleLens dashboard."
+    # Verify link code exists and is not expired
+    # Support both invitation codes (WA-LINK-, TG-LINK-) and regular link codes
+    unless user.bot_link_code.present? && user.bot_link_code_expires_at && user.bot_link_code_expires_at > Time.current
+      return "❌ This link request has expired. Please generate a new code from the CoupleLens dashboard."
     end
 
     field = platform_field

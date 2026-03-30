@@ -1,7 +1,7 @@
 source "https://rubygems.org"
 git_source(:github) { |repo| "https://github.com/#{repo}.git" }
 
-ruby "3.1.0"
+ruby "3.3.0"
 
 # Fix psych 5.x native compilation failure on Vercel (libyaml not available)
 gem "psych", "~> 4.0"
@@ -43,7 +43,7 @@ gem "jbuilder"
 # gem "bcrypt", "~> 3.1.7"
 
 # Windows does not include zoneinfo files, so bundle the tzinfo-data gem
-gem "tzinfo-data", platforms: %i[ mingw mswin x64_mingw jruby ]
+gem "tzinfo-data", platforms: %i[ windows jruby ]
 
 # Reduces boot times through caching; required in config/boot.rb
 gem "bootsnap", require: false
@@ -60,6 +60,7 @@ gem "devise"
 # Background Jobs
 gem "sidekiq"
 gem "redis"
+gem "connection_pool", "~> 2.5" # Force older version for Ruby 3.3.0 compatibility
 
 # OpenAI GPT / Gemini Integration
 gem "ruby-openai"
@@ -81,7 +82,7 @@ gem "image_processing", "~> 1.2"
 
 group :development, :test do
   # See https://guides.rubyonrails.org/debugging_rails_applications.html#debugging-with-the-debug-gem
-  gem "debug", platforms: %i[ mri mingw x64_mingw ]
+  gem "debug", platforms: %i[ mri windows ]
   gem "faker"
 end
 
@@ -89,7 +90,7 @@ group :development do
   # Use console on exceptions pages [https://github.com/rails/web-console]
   gem "web-console"
 
-  # Preview emails in browser instead of sending (auto-opens in new tab)
+  # Preview emails in browser instead of sending
   gem "letter_opener"
 
   # Add speed badges [https://github.com/MiniProfiler/rack-mini-profiler]

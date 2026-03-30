@@ -12,3 +12,4 @@ Rails.application.config.telegram_bot_username = ENV.fetch("TELEGRAM_BOT_USERNAM
 Rails.application.config.whatsapp_verify_token = ENV.fetch("WHATSAPP_VERIFY_TOKEN", "")
 Rails.application.config.whatsapp_access_token = ENV.fetch("WHATSAPP_ACCESS_TOKEN", "")
 Rails.application.config.whatsapp_phone_number_id = ENV.fetch("WHATSAPP_PHONE_NUMBER_ID", "")
+Rails.application.config.whatsapp_display_phone = ENV.fetch("WHATSAPP_DISPLAY_PHONE", "")
