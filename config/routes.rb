@@ -1,10 +1,9 @@
 Rails.application.routes.draw do
-  devise_for :users, controllers: { sessions: "users/sessions", registrations: "users/registrations" }
-
-  # OTP verification routes (outside Devise scope)
-  get  "users/otp/verify",  to: "users/otp#verify",  as: :users_otp_verify
-  post "users/otp/confirm", to: "users/otp#confirm", as: :users_otp_confirm
-  post "users/otp/resend",  to: "users/otp#resend",  as: :users_otp_resend
+  devise_for :users, controllers: {
+    sessions: "users/sessions",
+    registrations: "users/registrations",
+    omniauth_callbacks: "users/omniauth_callbacks"
+  }
 
   # Root
   root 'pages#home'

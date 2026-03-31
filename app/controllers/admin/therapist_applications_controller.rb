@@ -15,9 +15,8 @@ module Admin
       @application = TherapistApplication.find(params[:id])
       @application.update!(status: :approved)
 
-      # Create therapist profile
+      # Create therapist profile (user already has therapist role)
       user = @application.user
-      user.update!(role: :therapist)
       TherapistProfile.create!(
         user: user,
         specialization: @application.specialization,

@@ -1,6 +1,8 @@
 class User < ApplicationRecord
+  # Remove :validatable — we add validations manually to scope email uniqueness by role
   devise :database_authenticatable, :registerable,
-         :recoverable, :rememberable, :validatable
+         :recoverable, :rememberable,
+         :omniauthable, omniauth_providers: [:google_oauth2]
 
   # Roles
   enum role: { couple_member: 0, therapist: 1, admin: 2 }
@@ -36,11 +38,52 @@ class User < ApplicationRecord
   has_many :workshop_registrations, dependent: :destroy
   has_many :workshops, through: :workshop_registrations
 
-  # Validations
+  # Validations (replaces Devise :validatable, with email uniqueness scoped by role)
+  validates :email, presence: true, format: { with: Devise.email_regexp }, uniqueness: { scope: :role, case_sensitive: false }
+  validates :password, presence: true, confirmation: true, length: { within: Devise.password_length }, if: :password_required?
   validates :first_name, presence: true
   validates :last_name, presence: true
 
   after_initialize :set_default_role, if: :new_record?
+
+  def self.from_omniauth(auth, role: nil)
+    target_role = (role == 'therapist') ? :therapist : :couple_member
+
+    user = find_by(email: auth.info.email, role: target_role)
+    if user
+      user.update(provider: auth.provider, uid: auth.uid) unless user.provider
+      user
+    else
+      user = create(
+        email: auth.info.email,
+        provider: auth.provider,
+        uid: auth.uid,
+        first_name: auth.info.first_name || auth.info.name&.split(' ')&.first || 'User',
+        last_name: auth.info.last_name || auth.info.name&.split(' ')&.last || '',
+        password: Devise.friendly_token[0, 20],
+        role: target_role
+      )
+
+      if target_role == :therapist && user.persisted?
+        user.create_therapist_application!(
+          full_name: user.full_name,
+          email: user.email,
+          specialization: 'General Counseling',
+          bio: 'Pending - please update your profile',
+          certifications: 'Pending - please update',
+          years_experience: 0,
+          hourly_rate: 0,
+          status: :submitted
+        )
+      end
+
+      user
+    end
+  end
+
+  def oauth_user?
+    provider.present?
+  end
 
   def full_name
     "#{first_name} #{last_name}"
@@ -69,6 +112,12 @@ class User < ApplicationRecord
   end
 
   private
+
+  # Replaces Devise :validatable's password_required? — skip for OAuth users
+  def password_required?
+    return false if oauth_user?
+    !persisted? || !password.nil? || !password_confirmation.nil?
+  end
 
   def set_default_role
     self.role ||= :couple_member

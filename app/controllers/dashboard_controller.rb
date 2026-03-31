@@ -3,10 +3,10 @@ class DashboardController < ApplicationController
 
   def show
     return redirect_to admin_dashboard_path if current_user.admin?
-    return redirect_to therapist_dashboard_path if current_user.therapist?
+    return redirect_to therapist_dashboard_path if current_user.therapist? && current_user.therapist_profile.present?
 
-    # Pending therapist applicant — show waiting page
-    if current_user.therapist_application&.submitted?
+    # Therapist without approved profile — show pending page
+    if current_user.therapist? && current_user.therapist_application.present?
       @application = current_user.therapist_application
       return render 'dashboard/therapist_pending'
     end

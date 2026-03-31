@@ -5,6 +5,12 @@ module Therapist
 
     def show
       @profile = current_user.therapist_profile
+
+      unless @profile
+        redirect_to dashboard_path, alert: 'Your therapist profile is not yet approved.'
+        return
+      end
+
       @upcoming_bookings = @profile.bookings.upcoming.includes(:user).limit(5)
       @past_bookings = @profile.bookings.past.includes(:user).limit(5)
       @total_sessions = @profile.bookings.completed.count

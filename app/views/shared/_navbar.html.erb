@@ -27,7 +27,7 @@
             <li class="nav-item">
               <%= link_to 'Applications', admin_therapist_applications_path, class: 'nav-link text-warning' %>
             </li>
-          <% elsif current_user.therapist_application&.submitted? %>
+          <% elsif current_user.therapist? && current_user.therapist_application&.submitted? %>
             <!-- Pending Therapist Navigation -->
             <li class="nav-item">
               <span class="nav-link" style="color: #F39C12;">⏳ Application Pending</span>
@@ -92,10 +92,7 @@
       <% else %>
         <ul class="navbar-nav ms-auto">
           <li class="nav-item">
-            <%= link_to 'Sign In', new_user_session_path, class: 'nav-link' %>
-          </li>
-          <li class="nav-item ms-2">
-            <%= link_to 'Get Started', new_user_registration_path, class: 'btn btn-gradient btn-sm' %>
+            <%= link_to 'Sign In', new_user_session_path, class: 'btn btn-gradient btn-sm' %>
           </li>
         </ul>
       <% end %>

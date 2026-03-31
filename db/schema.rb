@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2026_03_26_095226) do
+ActiveRecord::Schema[7.0].define(version: 2026_03_31_095357) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -240,7 +240,9 @@ ActiveRecord::Schema[7.0].define(version: 2026_03_26_095226) do
     t.string "otp_code"
     t.datetime "otp_sent_at"
     t.boolean "otp_verified"
-    t.index ["email"], name: "index_users_on_email", unique: true
+    t.string "provider"
+    t.string "uid"
+    t.index ["email", "role"], name: "index_users_on_email_and_role", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
     t.index ["telegram_id"], name: "index_users_on_telegram_id", unique: true, where: "(telegram_id IS NOT NULL)"
     t.index ["whatsapp_id"], name: "index_users_on_whatsapp_id", unique: true, where: "(whatsapp_id IS NOT NULL)"
