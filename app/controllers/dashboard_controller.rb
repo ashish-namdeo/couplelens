@@ -63,4 +63,19 @@ class DashboardController < ApplicationController
     result[:message] ||= result.delete(:error)
     render json: result
   end
+
+  def unlink_bot
+    platform = params[:platform]
+    case platform
+    when 'whatsapp'
+      current_user.update!(whatsapp_id: nil)
+      flash[:notice] = 'WhatsApp account unlinked successfully.'
+    when 'telegram'
+      current_user.update!(telegram_id: nil)
+      flash[:notice] = 'Telegram account unlinked successfully.'
+    else
+      flash[:alert] = 'Invalid platform.'
+    end
+    redirect_to dashboard_path
+  end
 end

@@ -159,12 +159,40 @@
           </div>
           <p class="text-muted small mb-3">Your bot account is linked. You can use CoupleLens via messaging apps.</p>
 
+          <!-- Unlink connected platforms -->
+          <% if current_user.whatsapp_id.present? %>
+            <div class="d-flex align-items-center justify-content-between mb-2 glass-card p-2">
+              <span class="small">📱 WhatsApp Connected</span>
+              <%= button_to "Unlink", unlink_bot_path(platform: 'whatsapp'), method: :delete, data: { turbo: false, confirm: "Are you sure you want to unlink your WhatsApp account?" }, class: 'btn btn-sm', style: 'background: rgba(220, 53, 69, 0.2); color: #dc3545; font-size: 0.75rem;' %>
+            </div>
+          <% end %>
+          <% if current_user.telegram_id.present? %>
+            <div class="d-flex align-items-center justify-content-between mb-2 glass-card p-2">
+              <span class="small">✈️ Telegram Connected</span>
+              <%= button_to "Unlink", unlink_bot_path(platform: 'telegram'), method: :delete, data: { turbo: false, confirm: "Are you sure you want to unlink your Telegram account?" }, class: 'btn btn-sm', style: 'background: rgba(220, 53, 69, 0.2); color: #dc3545; font-size: 0.75rem;' %>
+            </div>
+          <% end %>
+
           <!-- Link another platform -->
           <% unless current_user.whatsapp_id.present? %>
-            <div class="mb-2">
-              <div class="input-group input-group-sm">
-                <input type="text" id="wa-phone" class="form-control" placeholder="WhatsApp number (e.g. 919876543210)" style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #fff;">
-                <button class="btn btn-sm" style="background: rgba(37, 211, 102, 0.2); color: #25D366;" onclick="sendLinkInvitation('whatsapp')">📱 Send Link</button>
+            <div class="mb-3">
+              <label class="text-muted small mb-1 d-block">📱 Link WhatsApp</label>
+              <div class="input-group input-group-sm mb-2">
+                <input type="text" id="wa-phone-number" class="form-control" placeholder="Enter your phone (e.g. 919876543210)" style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #fff;">
+                <button class="btn btn-sm" style="background: rgba(37, 211, 102, 0.2); color: #25D366;" onclick="generateWhatsAppLink()">📱 Get Link Code</button>
+              </div>
+              <div id="wa-link-display" class="glass-card p-3" style="display: none;">
+                <div class="text-center mb-2">
+                  <div class="text-muted small">Your link code:</div>
+                  <div class="fw-bold gradient-text" style="font-size: 1.3rem; letter-spacing: 2px;" id="wa-code-value"></div>
+                  <div class="text-muted" style="font-size: 0.7rem;">Expires in 30 minutes</div>
+                </div>
+                <button class="btn btn-sm w-100 mb-2" style="background: rgba(37, 211, 102, 0.4); color: #25D366; font-weight: bold;" onclick="openWhatsAppChat()">
+                  💬 Open WhatsApp & Send
+                </button>
+                <div class="text-muted text-center" style="font-size: 0.65rem;">
+                  Or manually message the bot with: <code>/link <span id="wa-code-copy"></span></code>
+                </div>
               </div>
             </div>
           <% end %>

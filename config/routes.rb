@@ -13,6 +13,7 @@ Rails.application.routes.draw do
   post 'dashboard/generate_bot_link_code', to: 'dashboard#generate_bot_link_code', as: :generate_bot_link_code
   post 'dashboard/send_link_invitation', to: 'dashboard#send_link_invitation', as: :send_link_invitation
   post 'dashboard/generate_telegram_link', to: 'dashboard#generate_telegram_link', as: :generate_telegram_link
+  delete 'dashboard/unlink_bot', to: 'dashboard#unlink_bot', as: :unlink_bot
 
   # AI Relationship Assistant
   resources :conversations, only: [:index, :show, :new, :create, :destroy] do
