@@ -36,6 +36,13 @@
               <%= f.email_field :email, class: 'form-control', placeholder: 'your@email.com' %>
             </div>
           </div>
+          <div class="col-12">
+            <div class="mb-3">
+              <%= f.label :profile_image, 'Profile Image', class: 'form-label' %>
+              <%= f.file_field :profile_image, class: 'form-control', accept: 'image/png,image/jpeg,image/jpg,image/webp,image/gif' %>
+              <small style="color: #888;">Optional. PNG, JPG, WEBP, GIF up to 5MB.</small>
+            </div>
+          </div>
           <div class="col-6">
             <div class="mb-3">
               <%= f.label :password, class: 'form-label' %>

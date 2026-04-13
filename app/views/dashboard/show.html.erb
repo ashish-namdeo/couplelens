@@ -1,40 +1,21 @@
 <div class="container py-4">
-  <div class="page-header">
+  <div class="page-header mb-4">
     <h1>Welcome back, <span class="gradient-text"><%= current_user.first_name %></span> 👋</h1>
     <p>Here's your relationship overview</p>
   </div>
 
+  <% if false # FOR NOW: Hidden per user request %>
   <!-- Stats Row -->
   <div class="row g-4 mb-4">
-    <div class="col-md-3 col-6">
+    <div class="col-md-4 col-6">
       <div class="stat-card">
         <div class="stat-icon" style="background: rgba(108, 99, 255, 0.15);">💬</div>
         <div class="stat-value gradient-text"><%= @total_conversations %></div>
         <div class="stat-label">Conversations</div>
       </div>
     </div>
-    <div class="col-md-3 col-6">
-      <div class="stat-card">
-        <div class="stat-icon" style="background: rgba(46, 204, 113, 0.15);">📊</div>
-        <div class="stat-value" style="color: #2ECC71;"><%= @avg_health_score %>%</div>
-        <div class="stat-label">Health Score</div>
-      </div>
-    </div>
-    <div class="col-md-3 col-6">
-      <div class="stat-card">
-        <div class="stat-icon" style="background: rgba(255, 107, 157, 0.15);">👨‍⚕️</div>
-        <div class="stat-value" style="color: #FF6B9D;"><%= @total_sessions %></div>
-        <div class="stat-label">Therapy Sessions</div>
-      </div>
-    </div>
-    <div class="col-md-3 col-6">
-      <div class="stat-card">
-        <div class="stat-icon" style="background: rgba(243, 156, 18, 0.15);">💝</div>
-        <div class="stat-value" style="color: #F39C12;"><%= @memories_count %></div>
-        <div class="stat-label">Memories</div>
-      </div>
-    </div>
   </div>
+  <% end %>
 
   <div class="row g-4">
     <!-- Quick Actions -->
@@ -42,22 +23,32 @@
       <div class="glass-card-static p-4 mb-4">
         <h5 class="fw-bold mb-3"><i class="bi bi-lightning-fill text-warning me-2"></i>Quick Actions</h5>
         <div class="row g-3">
-          <div class="col-md-4">
-            <%= link_to new_conversation_path, class: 'glass-card p-3 text-center text-decoration-none d-block' do %>
-              <div style="font-size: 2rem;">🤖</div>
-              <div class="fw-bold small mt-2">New AI Chat</div>
+          <div class="col-md-6">
+            <%= link_to new_conversation_path, class: 'glass-card p-3 text-center text-decoration-none d-block h-100' do %>
+              <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">🤖</div>
+              <div class="fw-bold fs-5">Talk to AI Advisor</div>
+              <div class="text-muted small mt-1">Get guidance on your relationship anytime</div>
             <% end %>
           </div>
-          <div class="col-md-4">
-            <%= link_to new_conflict_session_path, class: 'glass-card p-3 text-center text-decoration-none d-block' do %>
-              <div style="font-size: 2rem;">⚖️</div>
-              <div class="fw-bold small mt-2">Start Mediation</div>
+          <div class="col-md-6">
+            <%= link_to new_conflict_session_path, class: 'glass-card p-3 text-center text-decoration-none d-block h-100' do %>
+              <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">⚖️</div>
+              <div class="fw-bold fs-5">Resolve a Conflict</div>
+              <div class="text-muted small mt-1">Find balanced solutions together</div>
             <% end %>
           </div>
-          <div class="col-md-4">
-            <%= link_to rewrite_path, class: 'glass-card p-3 text-center text-decoration-none d-block' do %>
-              <div style="font-size: 2rem;">✏️</div>
-              <div class="fw-bold small mt-2">Rewrite Message</div>
+          <div class="col-md-6">
+            <%= link_to rewrite_path, class: 'glass-card p-3 text-center text-decoration-none d-block h-100' do %>
+              <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">✏️</div>
+              <div class="fw-bold fs-5">Improve Your Message</div>
+              <div class="text-muted small mt-1">Make your words calmer and clearer</div>
+            <% end %>
+          </div>
+          <div class="col-md-6">
+            <%= link_to compatibility_assessments_path, class: 'glass-card p-3 text-center text-decoration-none d-block h-100' do %>
+              <div style="font-size: 2.5rem; margin-bottom: 0.5rem;">💕</div>
+              <div class="fw-bold fs-5">Check Your Compatibility</div>
+              <div class="text-muted small mt-1">Understand your strengths and differences</div>
             <% end %>
           </div>
         </div>
@@ -89,6 +80,8 @@
         <% end %>
       </div>
 
+      <!-- Telegram & WhatsApp Conversations Hidden -->
+      <% if false # FOR NOW: Hidden per user request %>
       <!-- Telegram Conversations -->
       <% if @telegram_conversations.any? %>
         <div class="glass-card-static p-4 mb-4">
@@ -140,121 +133,26 @@
           <% end %>
         </div>
       <% end %>
+      <% end %>
     </div>
 
     <!-- Sidebar -->
     <div class="col-lg-4">
-      <!-- Link Bot Account -->
-      <div class="glass-card-static p-4 mb-4">
-        <h5 class="fw-bold mb-3"><i class="bi bi-phone-fill me-2" style="color: #6C63FF;"></i>Link Bot Account</h5>
-        <% if @bot_linked %>
-          <div class="d-flex align-items-center mb-2">
-            <span class="badge bg-success me-2">Connected</span>
-            <% if current_user.whatsapp_id.present? %>
-              <span class="badge-glass me-1">📱 WhatsApp</span>
-            <% end %>
-            <% if current_user.telegram_id.present? %>
-              <span class="badge-glass">✈️ Telegram</span>
-            <% end %>
-          </div>
-          <p class="text-muted small mb-3">Your bot account is linked. You can use CoupleLens via messaging apps.</p>
-
-          <!-- Unlink connected platforms -->
-          <% if current_user.whatsapp_id.present? %>
-            <div class="d-flex align-items-center justify-content-between mb-2 glass-card p-2">
-              <span class="small">📱 WhatsApp Connected</span>
-              <%= button_to "Unlink", unlink_bot_path(platform: 'whatsapp'), method: :delete, data: { turbo: false, confirm: "Are you sure you want to unlink your WhatsApp account?" }, class: 'btn btn-sm', style: 'background: rgba(220, 53, 69, 0.2); color: #dc3545; font-size: 0.75rem;' %>
-            </div>
-          <% end %>
-          <% if current_user.telegram_id.present? %>
-            <div class="d-flex align-items-center justify-content-between mb-2 glass-card p-2">
-              <span class="small">✈️ Telegram Connected</span>
-              <%= button_to "Unlink", unlink_bot_path(platform: 'telegram'), method: :delete, data: { turbo: false, confirm: "Are you sure you want to unlink your Telegram account?" }, class: 'btn btn-sm', style: 'background: rgba(220, 53, 69, 0.2); color: #dc3545; font-size: 0.75rem;' %>
-            </div>
-          <% end %>
-
-          <!-- Link another platform -->
-          <% unless current_user.whatsapp_id.present? %>
-            <div class="mb-3">
-              <label class="text-muted small mb-1 d-block">📱 Link WhatsApp</label>
-              <div class="input-group input-group-sm mb-2">
-                <input type="text" id="wa-phone-number" class="form-control" placeholder="Enter your phone (e.g. 919876543210)" style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #fff;">
-                <button class="btn btn-sm" style="background: rgba(37, 211, 102, 0.2); color: #25D366;" onclick="generateWhatsAppLink()">📱 Get Link Code</button>
-              </div>
-              <div id="wa-link-display" class="glass-card p-3" style="display: none;">
-                <div class="text-center mb-2">
-                  <div class="text-muted small">Your link code:</div>
-                  <div class="fw-bold gradient-text" style="font-size: 1.3rem; letter-spacing: 2px;" id="wa-code-value"></div>
-                  <div class="text-muted" style="font-size: 0.7rem;">Expires in 30 minutes</div>
-                </div>
-                <button class="btn btn-sm w-100 mb-2" style="background: rgba(37, 211, 102, 0.4); color: #25D366; font-weight: bold;" onclick="openWhatsAppChat()">
-                  💬 Open WhatsApp & Send
-                </button>
-                <div class="text-muted text-center" style="font-size: 0.65rem;">
-                  Or manually message the bot with: <code>/link <span id="wa-code-copy"></span></code>
-                </div>
-              </div>
-            </div>
-          <% end %>
-          <% unless current_user.telegram_id.present? %>
-            <div class="mb-2">
-              <button class="btn btn-sm w-100" style="background: rgba(0, 136, 204, 0.2); color: #0088cc;" onclick="linkViaTelegram()">✈️ Link Telegram Account</button>
-            </div>
-          <% end %>
-
-          <div id="link-invitation-result" class="mb-2" style="display: none;"></div>
-
-          <hr style="border-color: rgba(255,255,255,0.1);">
-          <button class="btn btn-sm btn-outline-glass w-100" id="generate-link-code-btn" onclick="generateLinkCode()">
-            🔗 Or Use Link Code
-          </button>
-          <div id="link-code-display" class="mt-2" style="display: none;">
-            <div class="glass-card p-3 text-center">
-              <div class="text-muted small">Your link code:</div>
-              <div class="fw-bold gradient-text" style="font-size: 1.5rem; letter-spacing: 2px;" id="link-code-value"></div>
-              <div class="text-muted" style="font-size: 0.75rem;">Expires in 30 minutes</div>
-              <div class="text-muted small mt-1">Send <code>/link CODE</code> on WhatsApp or Telegram</div>
-            </div>
-          </div>
-        <% else %>
-          <p class="text-muted small mb-3">Connect your WhatsApp or Telegram to use CoupleLens as a chatbot.</p>
-
-          <!-- WhatsApp Link - Instant Code Method -->
-          <div class="mb-3">
-            <label class="text-muted small mb-1 d-block">📱 WhatsApp</label>
-            <div class="input-group input-group-sm mb-2">
-              <input type="text" id="wa-phone-number" class="form-control" placeholder="Enter your phone (e.g. 919876543210)" style="background: rgba(255,255,255,0.05); border-color: rgba(255,255,255,0.1); color: #fff;">
-              <button class="btn btn-sm" style="background: rgba(37, 211, 102, 0.2); color: #25D366;" onclick="generateWhatsAppLink()">📱 Get Link Code</button>
-            </div>
-            <div id="wa-link-display" class="glass-card p-3" style="display: none;">
-              <div class="text-center mb-2">
-                <div class="text-muted small">Your link code:</div>
-                <div class="fw-bold gradient-text" style="font-size: 1.3rem; letter-spacing: 2px;" id="wa-code-value"></div>
-                <div class="text-muted" style="font-size: 0.7rem;">Expires in 30 minutes</div>
-              </div>
-              <div class="alert alert-success py-2 px-3 small mb-2" style="background: rgba(25, 135, 84, 0.1); border-color: rgba(25, 135, 84, 0.3);">
-                <strong>📲 Easy Way:</strong><br>
-                Click the button below - WhatsApp will open automatically with everything ready!
-              </div>
-              <button class="btn btn-sm w-100 mb-2" style="background: rgba(37, 211, 102, 0.4); color: #25D366; font-weight: bold;" onclick="openWhatsAppChat()">
-                💬 Open WhatsApp & Send
-              </button>
-              <div class="text-muted text-center" style="font-size: 0.65rem;">
-                Or manually message the bot with: <code>/link <span id="wa-code-copy"></span></code>
-              </div>
-            </div>
-          </div>
-
-          <div class="mb-3">
-            <label class="text-muted small mb-1 d-block">✈️ Telegram</label>
-            <button class="btn btn-sm w-100" style="background: rgba(0, 136, 204, 0.2); color: #0088cc;" onclick="linkViaTelegram()">✈️ Link via Telegram</button>
-            <div class="text-muted" style="font-size: 0.65rem; margin-top: 0.25rem;">Opens Telegram and links automatically</div>
-          </div>
-          </div>
-        <% end %>
+      <!-- Connect Your Messaging App -->
+      <div class="glass-card p-4 mb-4 text-center position-relative overflow-hidden" style="border: 1px solid rgba(255, 107, 157, 0.3); background: linear-gradient(145deg, rgba(26,26,46,0.8) 0%, rgba(108,99,255,0.1) 100%); mb-5">
+        <div class="position-absolute w-100 h-100" style="top: 0; left: 0; background: radial-gradient(circle at top right, rgba(255,107,157,0.2), transparent 60%); pointer-events: none;"></div>
+        
+        <h5 class="fw-bold mb-4 text-start position-relative z-1"><i class="bi bi-phone-fill me-2" style="color: #FF6B9D;"></i>Mobile Access</h5>
+        
+        <div class="position-relative z-1 py-3">
+          <div style="font-size: 3.5rem; margin-bottom: 1rem; filter: drop-shadow(0 0 15px rgba(255,107,157,0.4)); animation: fadeInUp 1s ease;">🚀</div>
+          <h6 class="fw-bold text-white mb-3" style="font-size: 1.25rem;">WhatsApp & Telegram<br><span class="gradient-text">Coming Soon</span></h6>
+          <p class="text-muted small mb-0 px-2" style="line-height: 1.6;">We are putting the final touches on our integrations. Engage with your AI Advisor instantly through your favorite chat apps.</p>
+        </div>
       </div>
 
       <!-- Upcoming Bookings -->
+      <% if false # FOR NOW: Hidden per user request %>
       <div class="glass-card-static p-4 mb-4">
         <h5 class="fw-bold mb-3"><i class="bi bi-calendar-check-fill me-2" style="color: #FF6B9D;"></i>Upcoming Sessions</h5>
         <% if @upcoming_bookings.any? %>
@@ -307,6 +205,7 @@
           <p class="text-muted small">No memories yet. <%= link_to 'Add your first', new_memory_path, class: 'text-decoration-none' %></p>
         <% end %>
       </div>
+      <% end %>
     </div>
   </div>
 </div>

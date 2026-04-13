@@ -1,42 +1,215 @@
-<h2>Edit <%= resource_name.to_s.humanize %></h2>
+<div class="container py-5" style="max-width: 800px;">
+  <% back_path = if current_user.admin?
+                   admin_dashboard_path
+                 elsif current_user.therapist? && current_user.therapist_profile.present?
+                   therapist_dashboard_path
+                 else
+                   dashboard_path
+                 end %>
+  <% profile_initials = user_initials(resource) %>
 
-<%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put }) do |f| %>
-  <%= render "devise/shared/error_messages", resource: resource %>
-
-  <div class="field">
-    <p><%= f.label :email %></p>
-    <p><%= f.email_field :email, autofocus: true, autocomplete: "email" %></p>
+  <div class="page-header mb-5 text-center">
+    <h1 style="font-weight: 800; font-size: 2.8rem; letter-spacing: -0.5px;">Profile <span class="gradient-text">Settings</span></h1>
+    <p class="text-muted" style="font-size: 1.1rem;">Manage your profile image and personal details.</p>
   </div>
 
-  <% if devise_mapping.confirmable? && resource.pending_reconfirmation? %>
-    <div>Currently waiting confirmation for: <%= resource.unconfirmed_email %></div>
+  <%= form_for(resource, as: resource_name, url: registration_path(resource_name), html: { method: :put, class: 'animate-fade-in' }) do |f| %>
+    <div class="glass-card p-4 p-md-5 mb-4">
+      <%= render "devise/shared/error_messages", resource: resource %>
+
+      <div class="mb-4 text-center">
+        <div class="position-relative d-inline-block">
+          <label for="user_profile_image" class="d-inline-block" style="cursor: pointer;" title="Change profile image">
+            <span id="profile-image-preview" data-initials="<%= profile_initials %>">
+              <%= user_avatar(resource, size: 96, css_class: 'border border-light border-opacity-25') %>
+            </span>
+            <span class="position-absolute d-flex align-items-center justify-content-center"
+                  style="right: -4px; bottom: -4px; width: 32px; height: 32px; border-radius: 50%; background: linear-gradient(135deg, #6C63FF, #FF6B9D); color: #fff; border: 2px solid rgba(15,14,23,0.9);">
+              <i class="bi bi-camera-fill" style="font-size: 0.85rem;"></i>
+            </span>
+          </label>
+        </div>
+        <%= f.file_field :profile_image, id: "user_profile_image", class: 'd-none', accept: "image/png,image/jpeg,image/jpg,image/webp,image/gif" %>
+        <%= hidden_field_tag 'user[remove_profile_image]', '0', id: 'remove_profile_image_flag' %>
+        
+        <div class="mt-3">
+          <% if resource.profile_image.attached? %>
+            <%= link_to 'View', url_for(resource.profile_image), class: 'btn btn-outline-glass btn-sm me-2', target: '_blank', rel: 'noopener' %>
+          <% end %>
+          <button type="button" id="remove-profile-image-btn" class="btn btn-sm" style="border: 1px solid rgba(231,76,60,0.5); color: rgba(231,76,60,0.85); background: transparent;" <%= "disabled" unless resource.profile_image.attached? %>>Remove</button>
+        </div>
+      </div>
+
+      <!-- Personal Info Section -->
+      <div class="row g-3">
+        <div class="col-md-6">
+          <%= f.label :first_name, class: 'form-label' %>
+          <%= f.text_field :first_name, class: 'form-control', autocomplete: "given-name" %>
+        </div>
+        <div class="col-md-6">
+          <%= f.label :last_name, class: 'form-label' %>
+          <%= f.text_field :last_name, class: 'form-control', autocomplete: "family-name" %>
+        </div>
+        <div class="col-12 border-bottom pb-4 mb-2 border-secondary border-opacity-25">
+          <%= f.label :email, class: 'form-label' %>
+          <%= f.email_field :email, class: 'form-control', autofocus: true, autocomplete: "email" %>
+        </div>
+      </div>
+
+      <% if devise_mapping.confirmable? && resource.pending_reconfirmation? %>
+        <div class="alert alert-warning mt-3 mb-4">
+          Waiting confirmation for: <%= resource.unconfirmed_email %>
+        </div>
+      <% end %>
+
+      <div class="d-flex align-items-center gap-3 pt-2">
+        <%= f.submit "Save Changes", class: 'btn btn-gradient px-4 py-2 fw-bold' %>
+        <%= link_to "Cancel", back_path, class: 'btn btn-outline-glass px-4 py-2' %>
+      </div>
+    </div>
   <% end %>
 
-  <div class="field">
-    <p><%= f.label :password %> <i>(leave blank if you don't want to change it)</i></p>
-    <p><%= f.password_field :password, autocomplete: "new-password" %></p>
-    <% if @minimum_password_length %>
-      <p><em><%= @minimum_password_length %> characters minimum</em></p>
-    <% end %>
+  <!-- Danger Zone -->
+  <div class="glass-card p-4 mt-5 d-flex align-items-center justify-content-between flex-wrap gap-4" style="border: 1px solid rgba(231, 76, 60, 0.3); background: linear-gradient(145deg, rgba(231,76,60,0.05) 0%, rgba(26,26,46,0.6) 100%);">
+    <div>
+      <h5 class="fw-bold text-danger mb-1"><i class="bi bi-exclamation-triangle-fill me-2"></i>Danger Zone</h5>
+      <p class="text-muted small mb-0" style="max-width: 450px; line-height: 1.5;">Permanently delete your account and all associated data. This action cannot be reversed, so please be certain.</p>
+    </div>
+    <button type="button" class="btn fw-bold" style="background: rgba(231,76,60,0.15); border: 1px solid rgba(231,76,60,0.45); color: #e74c3c;" data-bs-toggle="modal" data-bs-target="#deleteAccountModal">
+      <i class="bi bi-trash3 me-1"></i> Delete Account
+    </button>
   </div>
+</div>
 
-  <div class="field">
-    <p><%= f.label :password_confirmation %></p>
-    <p><%= f.password_field :password_confirmation, autocomplete: "new-password" %></p>
+<!-- Delete Account Modal -->
+<div class="modal fade" id="deleteAccountModal" tabindex="-1" aria-labelledby="deleteAccountModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="background: rgba(20, 18, 38, 0.98); border: 1px solid rgba(231, 76, 60, 0.3); border-radius: 1rem; color: #E4E4F0;">
+      <div class="modal-header border-0 pb-0 pt-4 px-4">
+        <h5 class="modal-title fw-bold" id="deleteAccountModalLabel">
+          <i class="bi bi-exclamation-octagon-fill text-danger me-2"></i>
+          Delete Account
+        </h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body px-4 py-3">
+        <p class="text-muted small mb-4">We're sorry to see you go. This action is <strong class="text-danger">permanent and irreversible</strong> — all your data, conversations, and sessions will be deleted.</p>
+
+        <!-- Reason -->
+        <div class="mb-3">
+          <label class="form-label fw-semibold">Why are you leaving? <span class="text-muted fw-normal">(optional)</span></label>
+          <select id="delete-reason" class="form-select" style="background-color: #1a1a2e; color: #E4E4F0; border-color: rgba(255,255,255,0.12);">
+            <option value="" style="background:#1a1a2e;">Select a reason...</option>
+            <option value="not_useful" style="background:#1a1a2e;">It's not useful for me</option>
+            <option value="too_expensive" style="background:#1a1a2e;">Too expensive</option>
+            <option value="privacy" style="background:#1a1a2e;">Privacy concerns</option>
+            <option value="relationship_ended" style="background:#1a1a2e;">My relationship has changed</option>
+            <option value="switching" style="background:#1a1a2e;">Switching to another app</option>
+            <option value="other" style="background:#1a1a2e;">Other</option>
+          </select>
+        </div>
+
+        <!-- Additional feedback -->
+        <div class="mb-4">
+          <label class="form-label fw-semibold">Anything else you'd like to share? <span class="text-muted fw-normal">(optional)</span></label>
+          <textarea id="delete-feedback" class="form-control" rows="3" placeholder="Your feedback helps us improve..." style="background: rgba(255,255,255,0.05); color: #E4E4F0; border-color: rgba(255,255,255,0.12);"></textarea>
+        </div>
+
+        <!-- Email confirmation -->
+        <div class="mb-2">
+          <label class="form-label fw-semibold">Type your email to confirm: <span class="text-danger"><%= resource.email %></span></label>
+          <input type="email" id="delete-confirm-email" class="form-control" placeholder="Enter your email address" style="background: rgba(255,255,255,0.05); color: #E4E4F0; border-color: rgba(255,255,255,0.12);">
+          <div class="form-text" style="color: #aaa;">This confirms you understand this action cannot be undone.</div>
+        </div>
+      </div>
+      <div class="modal-footer border-0 px-4 pb-4">
+        <button type="button" class="btn btn-outline-glass" data-bs-dismiss="modal">Cancel, keep my account</button>
+        <%= form_tag(registration_path(resource_name), method: :delete, id: 'delete-account-form', style: 'display:inline;') do %>
+          <%= hidden_field_tag :_method, 'delete' %>
+          <button type="submit" id="confirm-delete-btn" class="btn fw-bold" disabled
+            style="background: rgba(231,76,60,0.15); border: 1px solid rgba(231,76,60,0.45); color: #e74c3c;">
+            <i class="bi bi-trash3 me-1"></i> Permanently Delete Account
+          </button>
+        <% end %>
+      </div>
+    </div>
   </div>
+</div>
 
-  <div class="field">
-    <p><%= f.label :current_password %> <i>(we need your current password to confirm your changes)</i></p>
-    <p><%= f.password_field :current_password, autocomplete: "current-password" %></p>
-  </div>
+<script>
+  // Delete Account Modal Logic
+  (function() {
+    var userEmail = "<%= resource.email %>";
 
-  <div class="actions">
-    <%= f.submit "Update" %>
-  </div>
-<% end %>
+    function initDeleteModal() {
+      var emailInput = document.getElementById('delete-confirm-email');
+      var deleteBtn  = document.getElementById('confirm-delete-btn');
+      var modalEl    = document.getElementById('deleteAccountModal');
+      if (!emailInput || !deleteBtn || !modalEl) return;
 
-<h3>Cancel my account</h3>
+      emailInput.addEventListener('input', function() {
+        var matches = emailInput.value.trim().toLowerCase() === userEmail.toLowerCase();
+        deleteBtn.disabled = !matches;
+        emailInput.style.borderColor = emailInput.value.trim()
+          ? (matches ? 'rgba(46,204,113,0.6)' : 'rgba(231,76,60,0.6)')
+          : 'rgba(255,255,255,0.12)';
+      });
 
-<div>Unhappy? <%= button_to "Cancel my account", registration_path(resource_name), data: { confirm: "Are you sure?", turbo_confirm: "Are you sure?" }, method: :delete %></div>
+      modalEl.addEventListener('hidden.bs.modal', function() {
+        emailInput.value = '';
+        emailInput.style.borderColor = 'rgba(255,255,255,0.12)';
+        deleteBtn.disabled = true;
+        var reasonSelect = document.getElementById('delete-reason');
+        var feedbackArea = document.getElementById('delete-feedback');
+        if (reasonSelect) reasonSelect.value = '';
+        if (feedbackArea) feedbackArea.value = '';
+      });
+    }
 
-<%= link_to "Back", :back %>
+    document.addEventListener('turbo:load', initDeleteModal);
+    document.addEventListener('DOMContentLoaded', initDeleteModal);
+  })();
+
+  function initProfileImagePicker() {
+    var fileInput = document.getElementById("user_profile_image");
+    var preview = document.getElementById("profile-image-preview");
+    var removeButton = document.getElementById("remove-profile-image-btn");
+    var removeFlag = document.getElementById("remove_profile_image_flag");
+    if (!fileInput || !preview || !removeButton || !removeFlag) return;
+    if (fileInput.dataset.bound === "true") return;
+    fileInput.dataset.bound = "true";
+
+    function setFallbackAvatar() {
+      var initials = preview.dataset.initials || "U";
+      preview.innerHTML =
+        '<div class="d-inline-flex align-items-center justify-content-center border border-light border-opacity-25" style="width: 96px; height: 96px; border-radius: 50%; background: linear-gradient(135deg, #6C63FF, #FF6B9D); color: #fff; font-weight: 700;">' + initials + '</div>';
+    }
+
+    fileInput.addEventListener("change", function(event) {
+      var file = event.target.files && event.target.files[0];
+      if (!file) return;
+
+      removeFlag.value = "0";
+      removeButton.disabled = false;
+
+      if (!file.type.match(/^image\//)) return;
+
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        preview.innerHTML =
+          '<img src="' + e.target.result + '" alt="Profile image preview" style="width: 96px; height: 96px; border-radius: 50%; object-fit: cover;" class="border border-light border-opacity-25">';
+      };
+      reader.readAsDataURL(file);
+    });
+
+    removeButton.addEventListener("click", function() {
+      fileInput.value = "";
+      removeFlag.value = "1";
+      setFallbackAvatar();
+      removeButton.disabled = true;
+    });
+  }
+
+  document.addEventListener("turbo:load", initProfileImagePicker);
+  document.addEventListener("DOMContentLoaded", initProfileImagePicker);
+</script>

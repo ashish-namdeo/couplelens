@@ -42,49 +42,26 @@
                 AI Tools
               </a>
               <ul class="dropdown-menu dropdown-menu-dark">
-                <li><%= link_to '🤖 AI Assistant', conversations_path, class: 'dropdown-item' %></li>
-                <li><%= link_to '⚖️ Conflict Mediator', conflict_sessions_path, class: 'dropdown-item' %></li>
-                <li><%= link_to '✏️ Message Rewriter', rewrite_path, class: 'dropdown-item' %></li>
+                <li><%= link_to '🤖 Talk to AI Advisor', conversations_path, class: 'dropdown-item' %></li>
+                <li><%= link_to '⚖️ Resolve a Conflict', conflict_sessions_path, class: 'dropdown-item' %></li>
+                <li><%= link_to '✏️ Improve Your Message', rewrite_path, class: 'dropdown-item' %></li>
+                <li><%= link_to '💕 Check Your Compatibility', compatibility_assessments_path, class: 'dropdown-item' %></li>
               </ul>
             </li>
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                Analytics
-              </a>
-              <ul class="dropdown-menu dropdown-menu-dark">
-                <li><%= link_to '📊 Health Dashboard', health_path, class: 'dropdown-item' %></li>
-                <li><%= link_to '💕 Compatibility', compatibility_assessments_path, class: 'dropdown-item' %></li>
-              </ul>
-            </li>
-            <li class="nav-item">
-              <%= link_to 'Therapists', therapists_path, class: "nav-link #{controller_name == 'therapists' ? 'active' : ''}" %>
-            </li>
-            <li class="nav-item dropdown">
-              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                More
-              </a>
-              <ul class="dropdown-menu dropdown-menu-dark">
-                <li><%= link_to '💰 Finances', expenses_path, class: 'dropdown-item' %></li>
-                <li><%= link_to '💝 Memories', memories_path, class: 'dropdown-item' %></li>
-                <li><%= link_to '📚 Programs', programs_path, class: 'dropdown-item' %></li>
-                <li><%= link_to '🎯 Workshops', workshops_path, class: 'dropdown-item' %></li>
-                <li><hr class="dropdown-divider"></li>
-                <li><%= link_to '📅 My Bookings', bookings_path, class: 'dropdown-item' %></li>
-                <li><hr class="dropdown-divider"></li>
-                <li><%= link_to '🩺 Become a Therapist', new_therapist_application_path, class: 'dropdown-item' %></li>
-              </ul>
-            </li>
+            <%# FOR NOW: Hidden per updated PRD requirements %>
           <% end %>
         </ul>
 
         <ul class="navbar-nav">
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-              <i class="bi bi-person-circle me-1"></i> <%= current_user.first_name %>
+              <%= user_avatar(current_user, size: 28, css_class: 'me-2 border border-light border-opacity-25') %>
+              <%= current_user.first_name %>
             </a>
             <ul class="dropdown-menu dropdown-menu-dark dropdown-menu-end">
               <li><span class="dropdown-item-text text-muted small"><%= current_user.email %></span></li>
               <li><hr class="dropdown-divider"></li>
+              <li><%= link_to 'Profile Settings', edit_user_registration_path, class: 'dropdown-item' %></li>
               <li><%= button_to 'Sign Out', destroy_user_session_path, method: :delete, class: 'dropdown-item', form: { class: 'd-inline' } %></li>
             </ul>
           </li>

@@ -5,9 +5,7 @@
 
   <div class="glass-card-static p-4 mb-4">
     <div class="d-flex align-items-start gap-4 mb-4">
-      <div style="width: 80px; height: 80px; border-radius: 50%; background: linear-gradient(135deg, #6C63FF, #FF6B9D); display: flex; align-items: center; justify-content: center; font-size: 2.5rem; flex-shrink: 0;">
-        👨‍⚕️
-      </div>
+      <%= user_avatar(@therapist.user, size: 80, css_class: 'flex-shrink-0') %>
       <div>
         <h2 class="fw-bold mb-1"><%= @therapist.user.full_name %></h2>
         <span class="badge-gradient me-2"><%= @therapist.specialization %></span>

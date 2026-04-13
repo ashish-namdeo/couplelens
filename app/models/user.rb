@@ -1,4 +1,7 @@
 class User < ApplicationRecord
+  ALLOWED_PROFILE_IMAGE_TYPES = %w[image/png image/jpeg image/jpg image/webp image/gif].freeze
+  MAX_PROFILE_IMAGE_SIZE = 5.megabytes
+
   # Remove :validatable — we add validations manually to scope email uniqueness by role
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable,
@@ -6,6 +9,8 @@ class User < ApplicationRecord
 
   # Roles
   enum role: { couple_member: 0, therapist: 1, admin: 2 }
+
+  has_one_attached :profile_image
 
   # Partner relationship
   belongs_to :partner, class_name: 'User', optional: true
@@ -43,6 +48,7 @@ class User < ApplicationRecord
   validates :password, presence: true, confirmation: true, length: { within: Devise.password_length }, if: :password_required?
   validates :first_name, presence: true
   validates :last_name, presence: true
+  validate :profile_image_type_and_size
 
   after_initialize :set_default_role, if: :new_record?
 
@@ -121,5 +127,17 @@ class User < ApplicationRecord
 
   def set_default_role
     self.role ||= :couple_member
+  end
+
+  def profile_image_type_and_size
+    return unless profile_image.attached?
+
+    unless ALLOWED_PROFILE_IMAGE_TYPES.include?(profile_image.blob.content_type)
+      errors.add(:profile_image, "must be a PNG, JPG, WEBP, or GIF")
+    end
+
+    if profile_image.blob.byte_size > MAX_PROFILE_IMAGE_SIZE
+      errors.add(:profile_image, "must be smaller than 5MB")
+    end
   end
 end

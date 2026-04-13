@@ -59,17 +59,18 @@
         <h6 class="fw-bold" style="color: #2ECC71;"><i class="bi bi-lightbulb-fill me-1"></i> Summary</h6>
         <p class="mb-0"><%= @conflict_session.ai_summary %></p>
       </div>
+
+      <div class="mt-4 text-center">
+        <%= form_tag(analyze_conflict_session_path(@conflict_session), method: :post, data: { turbo: false }) do %>
+          <button type="submit" class="btn btn-outline-success btn-sm">
+            <i class="bi bi-arrow-clockwise me-1"></i> Retry Analysis
+          </button>
+        <% end %>
+      </div>
     </div>
   <% elsif @conflict_session.partner_perspective.present? || @conflict_session.chat_screenshots.attached? %>
     <div class="text-center mt-4">
       <%= form_tag(analyze_conflict_session_path(@conflict_session), method: :post, data: { turbo: false }) do %>
-        <div class="mb-3">
-          <label class="form-label" style="color: #ccc;">Select Language / भाषा चुनें</label>
-          <select name="language" class="form-select" style="max-width: 300px; margin: 0 auto;">
-            <option value="english">English</option>
-            <option value="hindi">हिन्दी (Hindi)</option>
-          </select>
-        </div>
         <button type="submit" class="btn btn-gradient btn-lg">
           <span><i class="bi bi-magic me-1"></i> Generate AI Analysis</span>
         </button>

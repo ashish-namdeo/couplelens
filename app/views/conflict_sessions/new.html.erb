@@ -8,10 +8,7 @@
     <div class="glass-card-static p-4">
       <div class="mb-3">
         <label class="form-label">Select Language / भाषा चुनें</label>
-        <select id="language-select" class="form-select">
-          <option value="english">English</option>
-          <option value="hindi">हिन्दी (Hindi)</option>
-        </select>
+        <%= f.select :language, [['English', 'english'], ['हिन्दी (Hindi)', 'hindi']], {}, class: 'form-select', id: 'language-select' %>
       </div>
 
       <div class="mb-3">

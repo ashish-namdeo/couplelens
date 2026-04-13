@@ -35,13 +35,17 @@ class ConflictSessionsController < ApplicationController
     has_screenshots = @conflict_session.chat_screenshots.attached?
 
     if has_perspectives || has_screenshots
-      analysis = generate_mediation_analysis(@conflict_session, params[:language] || 'english')
+      analysis = generate_mediation_analysis(@conflict_session)
       @conflict_session.update!(
         ai_analysis: analysis[:analysis],
         ai_summary: analysis[:summary],
         status: :completed
       )
-      redirect_to @conflict_session, notice: 'AI analysis complete!'
+      if analysis[:analysis].include?("We encountered an issue")
+        redirect_to @conflict_session, alert: 'AI analysis failed. Please try again.'
+      else
+        redirect_to @conflict_session
+      end
     else
       redirect_to @conflict_session, alert: 'Please provide both perspectives or upload chat screenshots before analysis.'
     end
@@ -54,10 +58,10 @@ class ConflictSessionsController < ApplicationController
   end
 
   def conflict_session_params
-    params.require(:conflict_session).permit(:topic, :user_perspective, :partner_perspective, :partner_name, chat_screenshots: [])
+    params.require(:conflict_session).permit(:topic, :user_perspective, :partner_perspective, :partner_name, :language, chat_screenshots: [])
   end
 
-  def generate_mediation_analysis(session, language = 'english')
+  def generate_mediation_analysis(session)
     gemini = GeminiService.new
 
     # Collect image data if screenshots are attached
@@ -77,7 +81,7 @@ class ConflictSessionsController < ApplicationController
       partner_name: session.partner_name,
       user_perspective: session.user_perspective,
       partner_perspective: session.partner_perspective,
-      language: language,
+      language: session.language || 'english',
       images: image_data
     )
   rescue StandardError => e

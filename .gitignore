@@ -21,10 +21,12 @@
 # Ignore uploaded files in development.
 /storage/*
 !/storage/.keep
+/public/uploads/*
+!/public/uploads/.keep
 /tmp/storage/*
 !/tmp/storage/
 !/tmp/storage/.keep
-
+/public/uploads
 /public/assets
 
 # Ignore master key for decrypting credentials and more.
