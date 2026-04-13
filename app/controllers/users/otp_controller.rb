@@ -38,7 +38,7 @@ class Users::OtpController < ApplicationController
       sign_in(user)
       user.remember_me! if remember_me == "1"
 
-      redirect_to after_sign_in_path_for(user), notice: "Signed in successfully.", status: :see_other
+      redirect_to after_sign_in_path_for(user), status: :see_other
     else
       flash.now[:alert] = "Invalid OTP. Please try again."
       @user = user

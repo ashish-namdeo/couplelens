@@ -21,7 +21,7 @@ class TherapistRegistrationsController < ApplicationController
       )
 
       sign_in(@user)
-      redirect_to root_path, notice: 'Account created! Your therapist application has been submitted for review. You will be notified once approved.'
+      redirect_to root_path
     else
       render :new, status: :unprocessable_entity
     end

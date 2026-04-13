@@ -7,7 +7,6 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
 
     if @user.persisted?
       sign_in @user, event: :authentication
-      set_flash_message(:notice, :success, kind: 'Google') if is_navigational_format?
 
       if @user.therapist?
         if @user.therapist_profile.present?
@@ -20,12 +19,11 @@ class Users::OmniauthCallbacksController < Devise::OmniauthCallbacksController
       end
     else
       session['devise.google_data'] = auth.except('extra')
-      flash[:alert] = @user.errors.full_messages.join("\n")
       redirect_to new_user_session_url
     end
   end
 
   def failure
-    redirect_to root_path, alert: 'Authentication failed. Please try again.'
+    redirect_to root_path
   end
 end
