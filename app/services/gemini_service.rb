@@ -104,12 +104,20 @@ class GeminiService
   # AI Compatibility Assessment — analyzes couple's compatibility from questionnaire
   def assess_compatibility(answers:, language: 'english')
     @language = language
+    lang_instruction = if language == 'hindi'
+      "You MUST write your ENTIRE response in Hindi (Devanagari script), including the full_report field. Only the JSON keys should remain in English."
+    else
+      "Write your response in English."
+    end
+
     messages = [
       {
         role: "system",
         content: <<~PROMPT
           You are an expert relationship counselor and compatibility analyst. Based on the couple's questionnaire answers, provide a thorough compatibility assessment.
-
+          
+          #{lang_instruction}
+          
           You MUST respond with ONLY valid JSON (no markdown, no code fences, no extra text) in this exact structure:
           {
             "financial_score": <number 0-100>,

@@ -21,19 +21,6 @@
     <%= render 'shared/navbar' %>
 
     <div class="toast-container position-fixed top-0 end-0 p-3" style="z-index: 9999;">
-      <% if notice.present? %>
-        <div class="toast show" role="alert" data-controller="toast" data-toast-delay-value="4000" style="background: rgba(26, 26, 46, 0.95); border: 1px solid rgba(108, 99, 255, 0.3); border-radius: 0.75rem;">
-          <div class="toast-header" style="background: transparent; border-bottom: 1px solid rgba(108, 99, 255, 0.15); color: #E4E4F0;">
-            <i class="bi bi-check-circle-fill me-2" style="color: #2ECC71;"></i>
-            <strong class="me-auto" style="color: #E4E4F0;">Success</strong>
-            <button type="button" class="btn-close btn-close-white" data-bs-dismiss="toast" aria-label="Close"></button>
-          </div>
-          <div class="toast-body" style="color: #C8C8DA;">
-            <%= notice %>
-          </div>
-        </div>
-      <% end %>
-
       <% if alert.present? %>
         <div class="toast show" role="alert" data-controller="toast" data-toast-delay-value="5000" style="background: rgba(26, 26, 46, 0.95); border: 1px solid rgba(108, 99, 255, 0.3); border-radius: 0.75rem;">
           <div class="toast-header" style="background: transparent; border-bottom: 1px solid rgba(108, 99, 255, 0.15); color: #E4E4F0;">
