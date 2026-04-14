@@ -1,4 +1,6 @@
 class ConflictSession < ApplicationRecord
+  include Slugable
+
   belongs_to :user
 
   has_many_attached :chat_screenshots

@@ -54,7 +54,7 @@ class ConflictSessionsController < ApplicationController
   private
 
   def set_conflict_session
-    @conflict_session = current_user.conflict_sessions.find(params[:id])
+    @conflict_session = current_user.conflict_sessions.find_by!(slug: params[:id])
   end
 
   def conflict_session_params

@@ -57,7 +57,7 @@ class CompatibilityAssessmentsController < ApplicationController
   private
 
   def set_assessment
-    @assessment = current_user.compatibility_assessments.find(params[:id])
+    @assessment = current_user.compatibility_assessments.find_by!(slug: params[:id])
   end
 
   def assessment_params

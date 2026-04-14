@@ -70,6 +70,8 @@ ActiveRecord::Schema[7.0].define(version: 2026_04_13_135339) do
     t.integer "status"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
+    t.string "slug"
+    t.index ["slug"], name: "index_compatibility_assessments_on_slug", unique: true
     t.index ["user_id"], name: "index_compatibility_assessments_on_user_id"
   end
 
@@ -85,6 +87,8 @@ ActiveRecord::Schema[7.0].define(version: 2026_04_13_135339) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "language", default: "english"
+    t.string "slug"
+    t.index ["slug"], name: "index_conflict_sessions_on_slug", unique: true
     t.index ["user_id"], name: "index_conflict_sessions_on_user_id"
   end
 
@@ -97,6 +101,8 @@ ActiveRecord::Schema[7.0].define(version: 2026_04_13_135339) do
     t.datetime "updated_at", null: false
     t.string "language"
     t.string "platform", default: "web"
+    t.string "slug"
+    t.index ["slug"], name: "index_conversations_on_slug", unique: true
     t.index ["platform"], name: "index_conversations_on_platform"
     t.index ["user_id"], name: "index_conversations_on_user_id"
   end

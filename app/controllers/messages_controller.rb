@@ -2,7 +2,7 @@ class MessagesController < ApplicationController
   before_action :authenticate_user!
 
   def create
-    @conversation = current_user.conversations.find(params[:conversation_id])
+    @conversation = current_user.conversations.find_by!(slug: params[:conversation_id])
     @message = @conversation.messages.new(message_params)
     @message.role = 'user'
 
