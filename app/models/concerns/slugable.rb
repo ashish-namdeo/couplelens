@@ -3,6 +3,7 @@ module Slugable
 
   included do
     before_validation :generate_slug, on: :create
+    after_find :ensure_slug!
     validates :slug, presence: true, uniqueness: true
   end
 
@@ -15,5 +16,10 @@ module Slugable
   def generate_slug
     return if slug.present?
     self.slug = SecureRandom.hex(8)
+  end
+
+  def ensure_slug!
+    return if slug.present?
+    update_column(:slug, SecureRandom.hex(8))
   end
 end

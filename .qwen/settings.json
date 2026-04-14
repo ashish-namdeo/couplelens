@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(rails *)",
+      "Bash(bin/rails *)",
+      "Bash(ruby *)",
+      "Bash(rm *)"
+    ]
+  },
+  "$version": 3
+}
