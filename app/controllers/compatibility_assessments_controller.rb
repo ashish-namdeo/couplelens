@@ -29,7 +29,7 @@ class CompatibilityAssessmentsController < ApplicationController
         family_involvement: params[:family_involvement],
         strengths_text: params[:strengths_text],
         concerns_text: params[:concerns_text]
-      })
+      }, language: params[:language] || 'english')
 
       @assessment.financial_score = result[:financial_score]
       @assessment.lifestyle_score = result[:lifestyle_score]
@@ -41,13 +41,15 @@ class CompatibilityAssessmentsController < ApplicationController
       @assessment.status = :completed
 
       if @assessment.save
-        redirect_to @assessment, notice: 'AI compatibility assessment completed!'
+        notice_msg = params[:language] == 'hindi' ? 'AI संगतता मूल्यांकन पूरा हुआ!' : 'AI compatibility assessment completed!'
+        redirect_to @assessment, notice: notice_msg
       else
         render :new, status: :unprocessable_entity
       end
     rescue => e
       Rails.logger.error("Compatibility assessment error: #{e.message}")
-      @assessment.errors.add(:base, "AI analysis failed. Please try again.")
+      error_msg = params[:language] == 'hindi' ? 'AI विश्लेषण विफल। कृपया पुनः प्रयास करें।' : "AI analysis failed. Please try again."
+      @assessment.errors.add(:base, error_msg)
       render :new, status: :unprocessable_entity
     end
   end

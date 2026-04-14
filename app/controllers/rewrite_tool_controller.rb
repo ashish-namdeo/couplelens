@@ -30,7 +30,11 @@ class RewriteToolController < ApplicationController
   rescue StandardError => e
     Rails.logger.error("Gemini rewrite error: #{e.message}")
     @tone_analysis = default_tone
-    "I want to share something important with you. #{message.sub(/^./, &:downcase)} I value our relationship and want us to work through this together."
+    if @language == 'hindi'
+      "मैं आपसे कुछ महत्वपूर्ण साझा करना चाहता हूँ। #{message.sub(/^./, &:downcase)} मैं हमारे रिश्ते को महत्व देता हूँ और इसे साथ मिलकर सुधारना चाहता हूँ।"
+    else
+      "I want to share something important with you. #{message.sub(/^./, &:downcase)} I value our relationship and want us to work through this together."
+    end
   end
 
   def analyze_tone(message)

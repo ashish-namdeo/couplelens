@@ -587,7 +587,12 @@ class MessagingBotService
     text
   rescue StandardError => e
     Rails.logger.error("Rewrite error: #{e.message}")
-    "Sorry, I couldn't rewrite that message right now. Please try again."
+    language = conversation.language || 'english'
+    if language == 'hindi'
+      "मुझे अभी यह संदेश फिर से लिखने में कठिनाई हो रही है। कृपया फिर से प्रयास करें।"
+    else
+      "Sorry, I couldn't rewrite that message right now. Please try again."
+    end
   end
 
   def handle_mediate(user, args)
@@ -844,7 +849,11 @@ class MessagingBotService
     MSG
   rescue StandardError => e
     Rails.logger.error("Analyze error: #{e.message}")
-    "Sorry, I couldn't analyze right now. Please try again."
+    if language == 'hindi'
+      "मुझे अभी विश्लेषण करने में कठिनाई हो रही है। कृपया फिर से प्रयास करें।"
+    else
+      "Sorry, I couldn't analyze right now. Please try again."
+    end
   end
 
   def handle_agent(user, args)
@@ -918,7 +927,12 @@ class MessagingBotService
     retry_response
   rescue StandardError => e
     Rails.logger.error("Chat error via #{@platform}: #{e.message}")
-    "I'm sorry, I'm having trouble right now. Please try again in a moment."
+    language = conversation.language || 'english'
+    if language == 'hindi'
+      "मुझे अभी कठिनाई हो रही है। कृपया कुछ देर में फिर से प्रयास करें।"
+    else
+      "I'm sorry, I'm having trouble right now. Please try again in a moment."
+    end
   end
 
   def handle_reset(user, _args)

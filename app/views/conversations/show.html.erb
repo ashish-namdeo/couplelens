@@ -19,8 +19,8 @@
     </div>
   </div>
 
-  <div class="glass-card-static chat-container">
-    <div class="chat-messages" id="chat-messages">
+  <div class="glass-card-static chat-container" data-controller="chat" data-action="click@window->chat#closeEmojiPicker">
+    <div class="chat-messages" id="chat-messages" data-chat-target="messages">
       <% @messages.each do |message| %>
         <% case message.role %>
         <% when 'system' %>
@@ -42,25 +42,25 @@
     </div>
 
     <div class="chat-input-area p-3 border-top border-secondary border-opacity-25" style="background: rgba(15, 14, 23, 0.8);">
-      <%= form_with(model: [@conversation, @message], class: 'd-flex align-items-end gap-2', data: { turbo: false }, id: 'chat-form') do |f| %>
+      <%= form_with(model: [@conversation, @message], class: 'd-flex align-items-end gap-2', id: 'chat-form', data: { chat_target: 'form', action: 'submit->chat#handleSubmit' }) do |f| %>
         
         <script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@1/index.js"></script>
         
         <div class="position-relative flex-grow-1 d-flex align-items-center" style="background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 1.5rem; padding: 0.25rem 0.5rem; transition: background 0.2s;">
           
-          <button type="button" id="emoji-button" class="btn btn-link text-muted pe-1 d-flex align-items-center justify-content-center" style="font-size: 1.25rem; text-decoration: none; width: 40px; height: 40px; border-radius: 50%; opacity: 0.7; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">
+          <button type="button" id="emoji-button" class="btn btn-link text-muted pe-1 d-flex align-items-center justify-content-center" style="font-size: 1.25rem; text-decoration: none; width: 40px; height: 40px; border-radius: 50%; opacity: 0.7; transition: opacity 0.2s;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'" data-chat-target="emojiBtn" data-action="click->chat#toggleEmojiPicker">
             😀
           </button>
           
-          <%= f.text_area :content, id: 'chat-input', class: 'form-control border-0 shadow-none bg-transparent text-white focus-ring focus-ring-dark', placeholder: @conversation.language == 'hindi' ? 'अपना संदेश लिखें...' : 'Type your message...', rows: 1, style: 'resize: none; max-height: 120px; outline: none; box-shadow: none;' %>
+          <%= f.text_area :content, id: 'chat-input', class: 'form-control border-0 shadow-none bg-transparent text-white focus-ring focus-ring-dark', placeholder: @conversation.language == 'hindi' ? 'अपना संदेश लिखें...' : 'Type your message...', rows: 1, style: 'resize: none; max-height: 120px; outline: none; box-shadow: none;', data: { chat_target: 'input', action: 'input->chat#resizeInput keydown->chat#handleKeydown' } %>
           
           <!-- Emoji picker hidden by default -->
-          <div id="emoji-picker-container" style="display: none; position: absolute; bottom: calc(100% + 15px); left: 0; z-index: 1000; filter: drop-shadow(0 10px 25px rgba(0,0,0,0.5)); border-radius: 10px;">
-            <emoji-picker class="dark" style="--background: #1A1A2E; --border-color: rgba(255,255,255,0.1); --input-border-color: rgba(255,255,255,0.2); --text-color: #fff;"></emoji-picker>
+          <div id="emoji-picker-container" style="display: none; position: absolute; bottom: calc(100% + 15px); left: 0; z-index: 1000; filter: drop-shadow(0 10px 25px rgba(0,0,0,0.5)); border-radius: 10px;" data-chat-target="pickerContainer">
+            <emoji-picker class="dark" style="--background: #1A1A2E; --border-color: rgba(255,255,255,0.1); --input-border-color: rgba(255,255,255,0.2); --text-color: #fff;" data-chat-target="picker" data-action="emoji-click->chat#handleEmojiClick"></emoji-picker>
           </div>
         </div>
 
-        <button type="submit" class="btn btn-gradient rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 shadow-sm" id="send-button" style="width: 48px; height: 48px; transition: transform 0.2s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'">
+        <button type="submit" class="btn btn-gradient rounded-circle d-flex align-items-center justify-content-center flex-shrink-0 shadow-sm" id="send-button" style="width: 48px; height: 48px; transition: transform 0.2s;" onmousedown="this.style.transform='scale(0.95)'" onmouseup="this.style.transform='scale(1)'" data-chat-target="sendBtn">
           <svg viewBox="0 0 24 24" width="22" height="22" fill="white" style="transform: translateX(2px);">
             <path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"></path>
           </svg>
@@ -69,78 +69,3 @@
     </div>
   </div>
 </div>
-
-<script>
-  document.addEventListener('DOMContentLoaded', function() {
-    const chatMessages = document.getElementById('chat-messages');
-    if (chatMessages) {
-      chatMessages.scrollTop = chatMessages.scrollHeight;
-    }
-
-    const input = document.getElementById('chat-input');
-    const form = document.getElementById('chat-form');
-    const sendBtn = document.getElementById('send-button');
-    const emojiBtn = document.getElementById('emoji-button');
-    const pickerContainer = document.getElementById('emoji-picker-container');
-    const picker = document.querySelector('emoji-picker');
-
-    if (input && form) {
-      // Auto-resize textarea
-      input.addEventListener('input', function() {
-        this.style.height = 'auto';
-        this.style.height = (this.scrollHeight) + 'px';
-      });
-
-      // Submit on Enter (without Shift)
-      input.addEventListener('keydown', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-          e.preventDefault();
-          if (this.value.trim() !== '') {
-            sendBtn.click(); // Simulates actual form submission triggered by button
-          }
-        }
-      });
-
-      // Show loading state immediately on submit
-      form.addEventListener('submit', function() {
-        if (input.value.trim() !== '') {
-          sendBtn.innerHTML = '<div class="spinner-border spinner-border-sm text-light" role="status"></div>';
-          sendBtn.style.pointerEvents = 'none';
-          input.readOnly = true;
-          input.style.opacity = '0.7';
-        }
-      });
-    }
-
-    // Emoji Picker functionality
-    if (emojiBtn && pickerContainer && picker) {
-      emojiBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        pickerContainer.style.display = pickerContainer.style.display === 'none' ? 'block' : 'none';
-      });
-
-      picker.addEventListener('emoji-click', event => {
-        const cursorPosition = input.selectionStart;
-        const textBefore = input.value.substring(0, cursorPosition);
-        const textAfter = input.value.substring(cursorPosition);
-        input.value = textBefore + event.detail.unicode + textAfter;
-        
-        // Re-focus and position cursor
-        input.focus();
-        input.selectionStart = cursorPosition + event.detail.unicode.length;
-        input.selectionEnd = cursorPosition + event.detail.unicode.length;
-        
-        // Trigger input event for auto-resize
-        input.dispatchEvent(new Event('input'));
-      });
-
-      // Close picker when clicking outside
-      document.addEventListener('click', (e) => {
-        if (!pickerContainer.contains(e.target) && e.target !== emojiBtn) {
-          pickerContainer.style.display = 'none';
-        }
-      });
-    }
-  });
-</script>

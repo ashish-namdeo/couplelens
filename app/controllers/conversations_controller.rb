@@ -24,7 +24,7 @@ class ConversationsController < ApplicationController
       system_prompt = persona_system_prompt(@conversation.persona)
       @conversation.messages.create!(role: 'system', content: system_prompt)
 
-      redirect_to @conversation, notice: 'Conversation started!'
+      redirect_to @conversation
     else
       render :new, status: :unprocessable_entity
     end

@@ -70,7 +70,7 @@
 
     <div class="d-flex gap-3">
       <%= f.submit 'Start Conversation', class: 'btn btn-gradient btn-lg' %>
-      <%= link_to 'Cancel', conversations_path, class: 'btn btn-outline-glass btn-lg' %>
+      <%= link_to 'Cancel', 'javascript:history.back()', class: 'btn btn-outline-glass btn-lg' %>
     </div>
   <% end %>
 </div>

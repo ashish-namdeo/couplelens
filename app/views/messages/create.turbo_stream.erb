@@ -1,0 +1,32 @@
+<%# Append the new user message %>
+<%= turbo_stream.append "chat-messages" do %>
+  <div class="message-bubble user-message">
+    <div class="small fw-bold mb-1">You</div>
+    <%= simple_format(@message.content) %>
+  </div>
+<% end %>
+
+<%# Append the AI assistant response %>
+<% if (assistant_message = @conversation.messages.where(role: 'assistant').last) %>
+  <%= turbo_stream.append "chat-messages" do %>
+    <div class="message-bubble assistant-message">
+      <div class="small fw-bold mb-1"><%= @conversation.persona_icon %> <%= @conversation.persona_display_name %></div>
+      <%= simple_format(assistant_message.content) %>
+    </div>
+  <% end %>
+<% end %>
+
+<%# Clear the input field %>
+<%= turbo_stream.update "chat-input", "" %>
+
+<%# Scroll to bottom %>
+<%= turbo_stream.append "chat-messages" do %>
+  <script>
+    const chatMessages = document.getElementById('chat-messages');
+    if (chatMessages) {
+      setTimeout(() => {
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }, 100);
+    }
+  </script>
+<% end %>

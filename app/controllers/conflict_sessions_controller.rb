@@ -16,7 +16,7 @@ class ConflictSessionsController < ApplicationController
     @conflict_session = current_user.conflict_sessions.new(conflict_session_params)
 
     if @conflict_session.save
-      redirect_to @conflict_session, notice: 'Conflict session created. Share with your partner for their perspective.'
+      redirect_to @conflict_session
     else
       render :new, status: :unprocessable_entity
     end
@@ -24,7 +24,7 @@ class ConflictSessionsController < ApplicationController
 
   def update
     if @conflict_session.update(conflict_session_params)
-      redirect_to @conflict_session, notice: 'Perspective updated.'
+      redirect_to @conflict_session
     else
       render :show, status: :unprocessable_entity
     end
@@ -86,9 +86,17 @@ class ConflictSessionsController < ApplicationController
     )
   rescue StandardError => e
     Rails.logger.error("Gemini mediation error: #{e.message}")
-    {
-      analysis: "We encountered an issue generating the AI analysis. Please try again.",
-      summary: "Analysis temporarily unavailable. Please retry."
-    }
+    language = session.language || 'english'
+    if language == 'hindi'
+      {
+        analysis: "हमें AI विश्लेषण उत्पन्न करने में समस्या हुई। कृपया पुनः प्रयास करें।",
+        summary: "विश्लेषण अस्थायी रूप से अनुपलब्ध है। कृपया पुनः प्रयास करें।"
+      }
+    else
+      {
+        analysis: "We encountered an issue generating the AI analysis. Please try again.",
+        summary: "Analysis temporarily unavailable. Please retry."
+      }
+    end
   end
 end

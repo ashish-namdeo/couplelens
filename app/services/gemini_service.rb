@@ -8,6 +8,7 @@ class GeminiService
 
   # AI Chat Assistant — sends full conversation history
   def chat(messages, language: "english")
+    @language = language
     if language == "hindi"
       # Inject language instruction into the system message
       messages = messages.map do |m|
@@ -24,11 +25,12 @@ class GeminiService
       temperature: 0.7,
       max_tokens: 1024
     )
-    extract_reply(response)
+    extract_reply(response, language: language)
   end
 
   # AI Conflict Mediator — analyzes both perspectives
   def mediate_conflict(topic:, user_name:, partner_name:, user_perspective:, partner_perspective:, language: "english", images: [])
+    @language = language
     lang_instruction = if language == "hindi"
       "You MUST write your entire analysis and summary in Hindi (Devanagari script)."
     else
@@ -100,7 +102,8 @@ class GeminiService
   end
 
   # AI Compatibility Assessment — analyzes couple's compatibility from questionnaire
-  def assess_compatibility(answers:)
+  def assess_compatibility(answers:, language: 'english')
+    @language = language
     messages = [
       {
         role: "system",
@@ -159,12 +162,13 @@ class GeminiService
       max_tokens: 3000
     )
 
-    reply = extract_reply(response)
-    parse_compatibility(reply)
+    reply = extract_reply(response, language: language)
+    parse_compatibility(reply, language: language)
   end
 
   # AI Conversation Rewrite — rewrites messages to be calmer
   def rewrite_message(original_message, language: "english")
+    @language = language
     lang_instruction = if language == "hindi"
       "You MUST write the rewritten message in Hindi (Devanagari script). The tone analysis JSON values should remain in English."
     else
@@ -197,8 +201,8 @@ class GeminiService
       max_tokens: 800
     )
 
-    reply = extract_reply(response)
-    parse_rewrite(reply, original_message)
+    reply = extract_reply(response, language: language)
+    parse_rewrite(reply, original_message, language: language)
   end
 
   private
@@ -227,8 +231,15 @@ class GeminiService
     end
   end
 
-  def extract_reply(response)
-    response.dig("choices", 0, "message", "content") || "I'm sorry, I couldn't generate a response. Please try again."
+  def extract_reply(response, language: 'english')
+    content = response.dig("choices", 0, "message", "content")
+    return content if content.present?
+    
+    if language == 'hindi'
+      "मुझे उत्तर उत्पन्न करने में कठिनाई हो रही है। कृपया फिर से प्रयास करें।"
+    else
+      "I'm sorry, I couldn't generate a response. Please try again."
+    end
   end
 
   def parse_mediation(reply)
@@ -255,7 +266,7 @@ class GeminiService
     { analysis: analysis, summary: summary }
   end
 
-  def parse_rewrite(reply, original)
+  def parse_rewrite(reply, original, language: 'english')
     if reply.include?("REWRITE:") && reply.include?("TONE_JSON:")
       parts = reply.split("TONE_JSON:")
       rewritten = parts[0].sub("REWRITE:", "").strip
@@ -288,7 +299,7 @@ class GeminiService
     }
   end
 
-  def parse_compatibility(reply)
+  def parse_compatibility(reply, language: 'english')
     # Strip markdown code fences if present
     cleaned = reply.gsub(/\A```(?:json)?\s*/, "").gsub(/\s*```\z/, "").strip
     data = JSON.parse(cleaned)
@@ -304,17 +315,28 @@ class GeminiService
   rescue JSON::ParserError => e
     Rails.logger.error("Compatibility JSON parse error: #{e.message}")
     Rails.logger.error("Raw reply: #{reply}")
-    default_compatibility
+    default_compatibility(language: language)
   end
 
-  def default_compatibility
-    {
-      financial_score: 65.0,
-      lifestyle_score: 65.0,
-      parenting_score: 65.0,
-      strengths: "We couldn't generate a detailed analysis at this time\n• Please try again for personalized results",
-      risk_areas: "Assessment could not be completed\n• Please retry for accurate results",
-      full_report: "We were unable to generate a detailed compatibility report. Please try again."
-    }
+  def default_compatibility(language: 'english')
+    if language == 'hindi'
+      {
+        financial_score: 65.0,
+        lifestyle_score: 65.0,
+        parenting_score: 65.0,
+        strengths: "हम विस्तृत विश्लेषण उत्पन्न नहीं कर सके\n• व्यक्तिगत परिणामों के लिए कृपया पुनः प्रयास करें",
+        risk_areas: "मूल्यांकन पूरा नहीं किया जा सका\n• सटीक परिणामों के लिए पुनः प्रयास करें",
+        full_report: "हम विस्तृत संगतता रिपोर्ट उत्पन्न करने में असमर्थ थे। कृपया पुनः प्रयास करें।"
+      }
+    else
+      {
+        financial_score: 65.0,
+        lifestyle_score: 65.0,
+        parenting_score: 65.0,
+        strengths: "We couldn't generate a detailed analysis at this time\n• Please try again for personalized results",
+        risk_areas: "Assessment could not be completed\n• Please retry for accurate results",
+        full_report: "We were unable to generate a detailed compatibility report. Please try again."
+      }
+    end
   end
 end

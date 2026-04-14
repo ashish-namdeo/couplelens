@@ -8,7 +8,10 @@ class MessagesController < ApplicationController
 
     if @message.save
       generate_ai_response(@conversation)
-      redirect_to @conversation
+      respond_to do |format|
+        format.turbo_stream
+        format.html { redirect_to @conversation }
+      end
     else
       redirect_to @conversation, alert: 'Message could not be sent.'
     end
@@ -35,9 +38,14 @@ class MessagesController < ApplicationController
     )
   rescue StandardError => e
     Rails.logger.error("Gemini API error: #{e.message}")
+    fallback_message = if conversation.language == 'hindi'
+      "मुझे अभी कनेक्ट करने में कठिनाई हो रही है। कृपया कुछ देर में फिर से प्रयास करें।"
+    else
+      "I'm sorry, I'm having trouble connecting right now. Please try again in a moment."
+    end
     conversation.messages.create!(
       role: 'assistant',
-      content: "I'm sorry, I'm having trouble connecting right now. Please try again in a moment."
+      content: fallback_message
     )
   end
 end
