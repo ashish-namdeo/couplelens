@@ -1,4 +1,6 @@
 class Users::RegistrationsController < Devise::RegistrationsController
+  layout 'auth'
+
   protected
 
   def update_resource(resource, params)

@@ -17,7 +17,6 @@ class ConversationsController < ApplicationController
 
   def create
     @conversation = current_user.conversations.new(conversation_params)
-    @conversation.title = "New Conversation #{Time.current.strftime('%b %d, %H:%M')}" if @conversation.title.blank?
 
     if @conversation.save
       # Add system message based on persona

@@ -27,7 +27,10 @@
               <span class="badge bg-success">Analysis Complete</span>
             <% end %>
           </div>
-          <%= link_to 'View', session, class: 'btn btn-sm btn-outline-glass' %>
+          <div class="d-flex gap-2">
+            <%= link_to 'View', session, class: 'btn btn-sm btn-outline-glass' %>
+            <%= button_to 'Delete', session, method: :delete, data: { turbo_confirm: 'Delete this session?' }, class: 'btn btn-sm btn-outline-glass' %>
+          </div>
         </div>
       </div>
     <% end %>

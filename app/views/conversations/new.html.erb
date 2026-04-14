@@ -7,8 +7,16 @@
   <%= form_with(model: @conversation, class: 'animate-fade-in') do |f| %>
     <div class="glass-card-static p-4 mb-4">
       <div class="mb-4">
-        <%= f.label :title, 'Conversation Topic', class: 'form-label' %>
-        <%= f.text_field :title, class: 'form-control', placeholder: 'e.g., Communication challenges with my partner' %>
+        <%= f.label :title, class: 'form-label' do %>
+          Conversation Topic <span class="text-danger">*</span>
+        <% end %>
+        <div class="position-relative">
+          <%= f.text_field :title, class: 'form-control', placeholder: 'e.g., Communication challenges with my partner', id: 'conversation-topic' %>
+          <div id="topic-tooltip" style="display: none; position: absolute; top: calc(100% + 4px); left: 0; background: rgba(231, 76, 60, 0.95); color: #fff; padding: 0.35rem 0.6rem; border-radius: 0.4rem; font-size: 0.8rem; z-index: 10; white-space: nowrap;">
+            Please enter a conversation topic
+          </div>
+        </div>
+        <div class="form-text" style="color: #aaa;" id="topic-hint">Please describe what you'd like to discuss</div>
       </div>
 
       <label class="form-label">Select AI Persona</label>
@@ -74,3 +82,46 @@
     </div>
   <% end %>
 </div>
+
+<script>
+document.addEventListener('turbo:load', function() {
+  const form = document.querySelector('form');
+  const topicInput = document.getElementById('conversation-topic');
+  const topicTooltip = document.getElementById('topic-tooltip');
+  const topicHint = document.getElementById('topic-hint');
+
+  if (!form || !topicInput || !topicTooltip) return;
+
+  // Remove previous handlers to prevent duplicates on Turbo navigation
+  if (form._validateTopic) {
+    form.removeEventListener('submit', form._validateTopic);
+  }
+
+  form._validateTopic = function(e) {
+    if (topicInput.value.trim() === '') {
+      e.preventDefault();
+      topicInput.style.borderColor = '#E74C3C';
+      topicInput.style.boxShadow = '0 0 0 0.15rem rgba(231, 76, 60, 0.25)';
+      topicTooltip.style.display = 'block';
+      if (topicHint) topicHint.style.display = 'none';
+      topicInput.focus();
+    } else {
+      topicInput.style.borderColor = '';
+      topicInput.style.boxShadow = '';
+      topicTooltip.style.display = 'none';
+      if (topicHint) topicHint.style.display = '';
+    }
+  };
+
+  form.addEventListener('submit', form._validateTopic);
+
+  topicInput.addEventListener('input', function() {
+    if (topicInput.value.trim() !== '') {
+      topicInput.style.borderColor = '';
+      topicInput.style.boxShadow = '';
+      topicTooltip.style.display = 'none';
+      if (topicHint) topicHint.style.display = '';
+    }
+  });
+});
+</script>

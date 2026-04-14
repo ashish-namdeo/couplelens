@@ -18,13 +18,15 @@
               <span style="font-size: 2rem;"><%= conv.persona_icon %></span>
               <span class="badge-glass"><%= conv.persona_display_name %></span>
             </div>
-            <h5 class="fw-bold mb-2"><%= conv.title %></h5>
+            <h5 class="fw-bold mb-2" style="font-size: 0.95rem;"><%= conv.title %></h5>
             <p class="text-muted small mb-3">
               <%= conv.messages.count %> messages · Updated <%= time_ago_in_words(conv.updated_at) %> ago
             </p>
             <div class="d-flex gap-2">
-              <%= link_to 'Continue', conv, class: 'btn btn-sm btn-gradient flex-grow-1' %>
-              <%= link_to 'Delete', conv, method: :delete, data: { confirm: 'Delete this conversation?' }, class: 'btn btn-sm btn-outline-glass' %>
+              <%= link_to conv, class: 'btn btn-sm btn-gradient flex-grow-1' do %>
+                <span>Continue</span>
+              <% end %>
+              <%= button_to 'Delete', conv, method: :delete, data: { turbo_confirm: 'Delete this conversation?' }, class: 'btn btn-sm btn-outline-glass' %>
             </div>
           </div>
         </div>

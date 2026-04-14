@@ -1,6 +1,6 @@
 class GeminiService
   MODEL = "gemini-2.5-flash"
-  MAX_RETRIES = 3
+  MAX_RETRIES = 5
 
   def initialize
     @client = OpenAI::Client.new
@@ -178,9 +178,9 @@ class GeminiService
   def rewrite_message(original_message, language: "english")
     @language = language
     lang_instruction = if language == "hindi"
-      "You MUST write the rewritten message in Hindi (Devanagari script). The tone analysis JSON values should remain in English."
+      "You MUST write the rewritten message ENTIRELY in Hindi (Devanagari script). Do NOT include any English words or the original message in the rewrite."
     else
-      "Write the rewritten message in English."
+      "Write the rewritten message in English. Do NOT include the original message in the rewrite."
     end
 
     messages = [
@@ -189,18 +189,22 @@ class GeminiService
         content: <<~PROMPT
           You are an expert in emotionally intelligent communication for couples.
           #{lang_instruction}
-          When given a message, provide:
-          1. A rewritten version that is calmer, more respectful, and uses "I" statements while preserving the core intent
-          2. A tone analysis in JSON format
+          When given a message, provide a calmer, more respectful rewrite that uses "I" statements while preserving the core intent.
 
-          Format your response exactly as:
-          REWRITE: (the rewritten message)
-          TONE_JSON: {"original_tone": "...", "emotional_intensity": 0-100, "defensiveness_risk": 0-100, "constructiveness": 0-100, "suggested_approach": "..."}
+          You MUST respond with ONLY valid JSON (no markdown, no code fences, no extra text) in this exact structure:
+          {
+            "rewritten_message": "the rewritten message text only",
+            "original_tone": "e.g. Accusatory, Frustrated, Angry, Sad",
+            "emotional_intensity": <number 0-100>,
+            "defensiveness_risk": <number 0-100>,
+            "constructiveness": <number 0-100>,
+            "suggested_approach": "brief tip in the same language as the rewritten message"
+          }
         PROMPT
       },
       {
         role: "user",
-        content: "Please rewrite this message to be more constructive:\n\n\"#{original_message}\""
+        content: "Rewrite this message to be more constructive:\n\n\"#{original_message}\""
       }
     ]
     response = chat_with_retry(
@@ -210,7 +214,8 @@ class GeminiService
     )
 
     reply = extract_reply(response, language: language)
-    parse_rewrite(reply, original_message, language: language)
+    Rails.logger.info("=== RAW REWRITE RESPONSE ===\n#{reply}")
+    parse_rewrite_json(reply, language: language)
   end
 
   private
@@ -274,37 +279,72 @@ class GeminiService
     { analysis: analysis, summary: summary }
   end
 
-  def parse_rewrite(reply, original, language: 'english')
-    if reply.include?("REWRITE:") && reply.include?("TONE_JSON:")
-      parts = reply.split("TONE_JSON:")
-      rewritten = parts[0].sub("REWRITE:", "").strip
-      begin
-        tone = JSON.parse(parts[1].strip)
-        tone_analysis = {
-          original_tone: tone["original_tone"] || "Unknown",
-          emotional_intensity: tone["emotional_intensity"] || 50,
-          defensiveness_risk: tone["defensiveness_risk"] || 50,
-          constructiveness: tone["constructiveness"] || 50,
-          suggested_approach: tone["suggested_approach"] || "Use 'I' statements and focus on feelings."
+  def parse_rewrite_json(reply, language:)
+    # Strip markdown code fences if present
+    cleaned = reply.gsub(/\A```(?:json)?\s*/, "").gsub(/\s*```\z/, "").strip
+
+    begin
+      data = JSON.parse(cleaned)
+      rewritten = data["rewritten_message"] || fallback_rewrite(nil, language: language)
+      {
+        rewritten: rewritten,
+        tone_analysis: {
+          original_tone: data["original_tone"] || "Unknown",
+          emotional_intensity: data["emotional_intensity"]&.to_i || 50,
+          defensiveness_risk: data["defensiveness_risk"]&.to_i || 50,
+          constructiveness: data["constructiveness"]&.to_i || 50,
+          suggested_approach: data["suggested_approach"] || fallback_tip(language: language)
         }
-      rescue JSON::ParserError
-        tone_analysis = default_tone
-      end
-    else
-      rewritten = reply
-      tone_analysis = default_tone
+      }
+    rescue JSON::ParserError => e
+      Rails.logger.error("Rewrite JSON parse error: #{e.message}")
+      Rails.logger.error("Raw reply: #{reply}")
+      {
+        rewritten: fallback_rewrite(nil, language: language),
+        tone_analysis: default_tone(language: language)
+      }
     end
-    { rewritten: rewritten, tone_analysis: tone_analysis }
   end
 
-  def default_tone
-    {
-      original_tone: "Unknown",
-      emotional_intensity: 50,
-      defensiveness_risk: 50,
-      constructiveness: 50,
-      suggested_approach: "Express feelings using 'I' statements and focus on specific behaviors."
-    }
+  def fallback_rewrite(_original, language:)
+    if language == 'hindi'
+      "मैं आपसे कुछ महत्वपूर्ण बात करना चाहता हूँ। मुझे लगता है कि हम बेहतर ढंग से संवाद कर सकते हैं।"
+    else
+      "I'd like to share something important with you. I think we can communicate better about this."
+    end
+  end
+
+  def fallback_tip(language:)
+    if language == 'hindi'
+      "'मैं' कथनों का उपयोग करें, अपने साथी के दृष्टिकोण को स्वीकार करें, और विशिष्ट व्यवहार पर ध्यान दें।"
+    else
+      "Express feelings using 'I' statements, acknowledge your partner's perspective, and focus on specific behavior."
+    end
+  end
+
+  # Legacy method kept for compatibility
+  def parse_rewrite(reply, original, language: 'english')
+    parse_rewrite_json(reply, language: language)
+  end
+
+  def default_tone(language: 'english')
+    if language == 'hindi'
+      {
+        original_tone: "अज्ञात",
+        emotional_intensity: 50,
+        defensiveness_risk: 50,
+        constructiveness: 50,
+        suggested_approach: "'मैं' कथनों का उपयोग करें, अपने साथी के दृष्टिकोण को स्वीकार करें, और विशिष्ट व्यवहार पर ध्यान दें।"
+      }
+    else
+      {
+        original_tone: "Unknown",
+        emotional_intensity: 50,
+        defensiveness_risk: 50,
+        constructiveness: 50,
+        suggested_approach: "Express feelings using 'I' statements, acknowledge your partner's perspective, and focus on specific behavior rather than character judgments."
+      }
+    end
   end
 
   def parse_compatibility(reply, language: 'english')

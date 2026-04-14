@@ -1,6 +1,6 @@
 class ConflictSessionsController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_conflict_session, only: [:show, :update, :analyze]
+  before_action :set_conflict_session, only: [:show, :update, :analyze, :destroy]
 
   def index
     @conflict_sessions = current_user.conflict_sessions.order(created_at: :desc)
@@ -49,6 +49,11 @@ class ConflictSessionsController < ApplicationController
     else
       redirect_to @conflict_session, alert: 'Please provide both perspectives or upload chat screenshots before analysis.'
     end
+  end
+
+  def destroy
+    @conflict_session.destroy
+    redirect_to conflict_sessions_path, notice: 'Conflict session deleted.'
   end
 
   private

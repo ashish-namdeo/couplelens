@@ -46,7 +46,10 @@
               </div>
             </div>
 
-            <%= link_to 'View Full Report', assessment, class: 'btn btn-sm btn-outline-glass w-100' %>
+            <div class="d-flex gap-2">
+              <%= link_to 'View Full Report', assessment, class: 'btn btn-sm btn-outline-glass flex-grow-1' %>
+              <%= button_to 'Delete', assessment, method: :delete, data: { turbo_confirm: 'Delete this assessment?' }, class: 'btn btn-sm btn-outline-glass' %>
+            </div>
           </div>
         </div>
       <% end %>

@@ -21,7 +21,7 @@ Rails.application.routes.draw do
   end
 
   # AI Conflict Mediator
-  resources :conflict_sessions do
+  resources :conflict_sessions, except: [:edit] do
     member do
       post :analyze
     end
@@ -36,7 +36,7 @@ Rails.application.routes.draw do
   post 'health/calculate', to: 'health_dashboard#calculate', as: :calculate_health
 
   # Compatibility Assessment
-  resources :compatibility_assessments, only: [:index, :show, :new, :create]
+  resources :compatibility_assessments, only: [:index, :show, :new, :create, :destroy]
 
   # Therapist Marketplace
   resources :therapists, only: [:index, :show]

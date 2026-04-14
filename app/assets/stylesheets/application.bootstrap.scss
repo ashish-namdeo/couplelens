@@ -362,20 +362,45 @@ body {
 
 // === FORM CONTROLS (DARK) ===
 .form-control, .form-select {
-  background: rgba(26, 26, 46, 0.8);
+  background: rgba(26, 26, 46, 0.7);
+  backdrop-filter: blur(10px);
   border: 1px solid $cl-border;
+  border-radius: 0.5rem;
   color: #E4E4F0;
+  padding: 0.75rem 1rem;
+  transition: all 0.2s ease;
 
   &:focus {
     border-color: $cl-gradient-start;
     box-shadow: 0 0 0 0.15rem rgba(108, 99, 255, 0.2);
     background: rgba(26, 26, 46, 0.9);
-    color: white;
+    color: #E4E4F0;
   }
 
   &::placeholder {
     color: rgba(160, 160, 184, 0.5);
   }
+}
+
+// Fix browser autofill white background
+input:-webkit-autofill,
+input:-webkit-autofill:hover,
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active,
+textarea:-webkit-autofill,
+textarea:-webkit-autofill:hover,
+textarea:-webkit-autofill:focus,
+textarea:-webkit-autofill:active,
+select:-webkit-autofill,
+select:-webkit-autofill:hover,
+select:-webkit-autofill:focus,
+select:-webkit-autofill:active {
+  -webkit-box-shadow: 0 0 0 1000px rgba(26, 26, 46, 0.7) inset !important;
+  -webkit-text-fill-color: #E4E4F0 !important;
+  caret-color: #E4E4F0;
+  color: #E4E4F0 !important;
+  background-color: rgba(26, 26, 46, 0.7) !important;
+  transition: background-color 5000s ease-in-out 0s;
 }
 
 .form-label {

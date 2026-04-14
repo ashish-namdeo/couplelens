@@ -14,7 +14,7 @@ class Conversation < ApplicationRecord
 
   PLATFORMS = %w[web telegram whatsapp].freeze
 
-  validates :title, presence: true
+  validates :title, presence: { message: "Please enter a topic for your conversation" }
   validates :platform, inclusion: { in: PLATFORMS }, allow_nil: true
 
   scope :by_platform, ->(platform) { where(platform: platform) }

@@ -11,7 +11,7 @@
           CoupleLens uses AI to help couples communicate better, resolve conflicts, and understand each other — anytime, anywhere.
         </p>
         <div class="d-flex gap-3 flex-wrap">
-          <%= link_to new_user_registration_path, class: 'btn btn-gradient btn-lg px-4' do %>
+          <%= link_to new_user_session_path, class: 'btn btn-gradient btn-lg px-4' do %>
             <span>Get Started Free <i class="bi bi-arrow-right ms-1"></i></span>
           <% end %>
           <a href="#features" class="btn btn-outline-glass btn-lg px-4">See What It Does</a>
@@ -121,16 +121,3 @@
   </div>
 </section>
 <% end %>
-
-<!-- CTA Section -->
-<section class="py-5 mb-4">
-  <div class="container">
-    <div class="glass-card-static p-5 text-center" style="background: linear-gradient(135deg, rgba(108, 99, 255, 0.1), rgba(255, 107, 157, 0.05));">
-      <h2 class="fw-bold display-6 mb-3">Ready to Strengthen Your Relationship?</h2>
-      <p class="text-muted mb-4" style="max-width: 500px; margin: 0 auto;">Join couples already using CoupleLens to communicate better and understand each other more deeply.</p>
-      <%= link_to new_user_registration_path, class: 'btn btn-gradient btn-lg px-5' do %>
-        <span>Start for Free <i class="bi bi-heart-fill ms-1"></i></span>
-      <% end %>
-    </div>
-  </div>
-</section>

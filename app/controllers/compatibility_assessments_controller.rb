@@ -1,6 +1,6 @@
 class CompatibilityAssessmentsController < ApplicationController
   before_action :authenticate_user!
-  before_action :set_assessment, only: [:show]
+  before_action :set_assessment, only: [:show, :destroy]
 
   def index
     @assessments = current_user.compatibility_assessments.order(created_at: :desc)
@@ -52,6 +52,11 @@ class CompatibilityAssessmentsController < ApplicationController
       @assessment.errors.add(:base, error_msg)
       render :new, status: :unprocessable_entity
     end
+  end
+
+  def destroy
+    @assessment.destroy
+    redirect_to compatibility_assessments_path, notice: 'Assessment deleted.'
   end
 
   private

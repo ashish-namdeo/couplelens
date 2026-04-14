@@ -29,6 +29,17 @@
   <% end %>
 
   <% if @rewritten.present? %>
+    <% if @rate_limit_error %>
+      <div class="alert alert-warning animate-fade-in-up mb-4" style="background: rgba(243, 156, 18, 0.12); border: 1px solid rgba(243, 156, 18, 0.35); border-radius: 0.75rem; color: #F39C12;">
+        <div class="d-flex align-items-start gap-2">
+          <i class="bi bi-exclamation-triangle-fill mt-1"></i>
+          <div>
+            <strong><%= @language == 'hindi' ? 'सीमा पार हो गई' : 'Rate Limit Reached' %></strong><br>
+            <small style="color: #ccc;"><%= @rewritten %></small>
+          </div>
+        </div>
+      </div>
+    <% else %>
     <!-- Tone Analysis -->
     <div class="glass-card-static p-4 mb-4 animate-fade-in-up">
       <h5 class="fw-bold mb-3"><i class="bi bi-bar-chart-fill me-2" style="color: #FF6B9D;"></i>Tone Analysis</h5>
@@ -79,5 +90,6 @@
         <small style="color: #ccc;"><i class="bi bi-lightbulb me-1"></i> <strong>Tip:</strong> <%= @tone_analysis[:suggested_approach] %></small>
       </div>
     </div>
+    <% end %>
   <% end %>
 </div>
