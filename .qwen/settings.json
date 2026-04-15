@@ -4,7 +4,8 @@
       "Bash(rails *)",
       "Bash(bin/rails *)",
       "Bash(ruby *)",
-      "Bash(rm *)"
+      "Bash(rm *)",
+      "Bash(yarn *)"
     ]
   },
   "$version": 3
