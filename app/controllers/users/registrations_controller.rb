@@ -5,6 +5,10 @@ class Users::RegistrationsController < Devise::RegistrationsController
 
   def update_resource(resource, params)
     remove_profile_image_if_requested(resource, params)
+    
+    # Prevent email changes from being persisted
+    params.delete(:email)
+    params.delete('email')
 
     if resource.oauth_user? && params[:password].blank? && params[:password_confirmation].blank?
       resource.update_without_password(params.except(:current_password))
@@ -16,6 +20,10 @@ class Users::RegistrationsController < Devise::RegistrationsController
   def after_sign_up_path_for(_resource)
     sign_out(resource)
     new_user_session_path
+  end
+
+  def after_update_path_for(_resource)
+    edit_user_registration_path
   end
 
   def remove_profile_image_if_requested(resource, params)
