@@ -32,11 +32,9 @@
         <%= f.file_field :profile_image, id: "user_profile_image", class: 'd-none', accept: "image/png,image/jpeg,image/jpg,image/webp,image/gif" %>
         <%= hidden_field_tag 'user[remove_profile_image]', '0', id: 'remove_profile_image_flag' %>
         
-        <div class="mt-3">
-          <% if resource.profile_image.attached? %>
-            <%= link_to 'View', url_for(resource.profile_image), class: 'btn btn-outline-glass btn-sm me-2', target: '_blank', rel: 'noopener' %>
-          <% end %>
-          <button type="button" id="remove-profile-image-btn" class="btn btn-sm" style="border: 1px solid rgba(231,76,60,0.5); color: rgba(231,76,60,0.85); background: transparent;" <%= "disabled" unless resource.profile_image.attached? %>>Remove</button>
+        <div id="profile-image-actions" class="mt-3" style="<%= 'display: none;' unless resource.profile_image.attached? %>">
+          <button type="button" class="btn btn-outline-glass btn-sm me-2" data-bs-toggle="modal" data-bs-target="#viewProfileImageModal" id="view-profile-image-btn">View</button>
+          <button type="button" id="remove-profile-image-btn" class="btn btn-sm" style="border: 1px solid rgba(231,76,60,0.5); color: rgba(231,76,60,0.85); background: transparent;">Remove</button>
         </div>
       </div>
 
@@ -136,6 +134,22 @@
   </div>
 </div>
 
+<!-- View Profile Image Modal -->
+<div class="modal fade" id="viewProfileImageModal" tabindex="-1" aria-hidden="true" style="backdrop-filter: blur(5px);">
+  <div class="modal-dialog modal-dialog-centered" style="max-width: 500px;">
+    <div class="modal-content" style="background: transparent; border: none; box-shadow: none;">
+      <div class="text-end mb-2">
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close" style="opacity: 0.8;"></button>
+      </div>
+      <div class="modal-body p-0 text-center">
+        <% if resource.profile_image.attached? %>
+          <%= image_tag resource.profile_image, class: "img-fluid rounded shadow-lg", style: "max-height: 80vh; border: 2px solid rgba(255,255,255,0.15);" %>
+        <% end %>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
   // Delete Account Modal Logic
   (function() {
@@ -174,8 +188,11 @@
     var fileInput = document.getElementById("user_profile_image");
     var preview = document.getElementById("profile-image-preview");
     var removeButton = document.getElementById("remove-profile-image-btn");
+    var viewButton = document.getElementById("view-profile-image-btn");
+    var actionsContainer = document.getElementById("profile-image-actions");
     var removeFlag = document.getElementById("remove_profile_image_flag");
-    if (!fileInput || !preview || !removeButton || !removeFlag) return;
+
+    if (!fileInput || !preview || !removeButton || !removeFlag || !actionsContainer) return;
     if (fileInput.dataset.bound === "true") return;
     fileInput.dataset.bound = "true";
 
@@ -191,6 +208,8 @@
 
       removeFlag.value = "0";
       removeButton.disabled = false;
+      actionsContainer.style.display = "block";
+      if (viewButton) viewButton.style.display = "none";
 
       if (!file.type.match(/^image\//)) return;
 
@@ -207,6 +226,7 @@
       removeFlag.value = "1";
       setFallbackAvatar();
       removeButton.disabled = true;
+      actionsContainer.style.display = "none";
     });
   }
 
