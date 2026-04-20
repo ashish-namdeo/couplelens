@@ -231,11 +231,12 @@ class GeminiService
           max_tokens: max_tokens
         }
       )
-    rescue Faraday::TooManyRequestsError => e
+    rescue Faraday::TooManyRequestsError, Faraday::ServerError, Faraday::ConnectionFailed => e
       retries += 1
       if retries <= MAX_RETRIES
-        sleep_time = 2 ** retries
-        Rails.logger.warn("Gemini 429 rate limit hit. Retrying in #{sleep_time}s (attempt #{retries}/#{MAX_RETRIES})")
+        sleep_time = (2 ** retries) + rand(0.0..1.0) # Add jitter
+        error_type = e.is_a?(Faraday::TooManyRequestsError) ? "429 Rate Limit" : "Server/Connection Error"
+        Rails.logger.warn("Gemini #{error_type} hit. Retrying in #{sleep_time.round(2)}s (attempt #{retries}/#{MAX_RETRIES})")
         sleep(sleep_time)
         retry
       else
@@ -280,8 +281,9 @@ class GeminiService
   end
 
   def parse_rewrite_json(reply, language:)
-    # Strip markdown code fences if present
-    cleaned = reply.gsub(/\A```(?:json)?\s*/, "").gsub(/\s*```\z/, "").strip
+    # Extract JSON block even if there is preamble text
+    json_match = reply.match(/\{[\s\S]*\}/)
+    cleaned = json_match ? json_match[0].strip : reply.strip
 
     begin
       data = JSON.parse(cleaned)
@@ -348,8 +350,9 @@ class GeminiService
   end
 
   def parse_compatibility(reply, language: 'english')
-    # Strip markdown code fences if present
-    cleaned = reply.gsub(/\A```(?:json)?\s*/, "").gsub(/\s*```\z/, "").strip
+    # Extract JSON block even if there is preamble text
+    json_match = reply.match(/\{[\s\S]*\}/)
+    cleaned = json_match ? json_match[0].strip : reply.strip
     data = JSON.parse(cleaned)
 
     {

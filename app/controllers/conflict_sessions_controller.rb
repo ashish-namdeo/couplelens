@@ -35,16 +35,26 @@ class ConflictSessionsController < ApplicationController
     has_screenshots = @conflict_session.chat_screenshots.attached?
 
     if has_perspectives || has_screenshots
-      analysis = generate_mediation_analysis(@conflict_session)
-      @conflict_session.update!(
-        ai_analysis: analysis[:analysis],
-        ai_summary: analysis[:summary],
-        status: :completed
-      )
-      if analysis[:analysis].include?("We encountered an issue")
-        redirect_to @conflict_session, alert: 'AI analysis failed. Please try again.'
-      else
-        redirect_to @conflict_session
+      begin
+        analysis = generate_mediation_analysis(@conflict_session)
+        
+        # Check if generate_mediation_analysis returned an error indicator
+        is_error = analysis[:analysis].to_s.include?("encountered an issue") || 
+                   analysis[:analysis].to_s.include?("समस्या")
+
+        if is_error
+          redirect_to @conflict_session, alert: 'AI analysis failed (Server Error). Please try again in a moment.'
+        else
+          @conflict_session.update!(
+            ai_analysis: analysis[:analysis],
+            ai_summary: analysis[:summary],
+            status: :completed
+          )
+          redirect_to @conflict_session, notice: 'Mediation analysis completed successfully!'
+        end
+      rescue => e
+        Rails.logger.error("Mediation analysis unexpected error: #{e.message}")
+        redirect_to @conflict_session, alert: "An unexpected error occurred: #{e.message}"
       end
     else
       redirect_to @conflict_session, alert: 'Please provide both perspectives or upload chat screenshots before analysis.'

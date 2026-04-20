@@ -1,80 +1,202 @@
-<div class="container py-4" style="max-width: 800px;">
-  <%= link_to conflict_sessions_path, class: 'btn btn-sm btn-outline-glass mb-3' do %>
-    <i class="bi bi-arrow-left me-1"></i> Back
-  <% end %>
-
-  <div class="page-header">
-    <h1>⚖️ <span class="gradient-text"><%= @conflict_session.topic %></span></h1>
-    <p>Session with <%= @conflict_session.partner_name %></p>
-  </div>
-
-  <div class="row g-4">
-    <!-- User's Perspective -->
-    <div class="col-md-6">
-      <div class="glass-card-static p-4 h-100">
-        <h5 class="fw-bold mb-3"><i class="bi bi-person-fill me-2" style="color: #6C63FF;"></i><%= current_user.first_name %>'s Perspective</h5>
-        <p><%= simple_format(@conflict_session.user_perspective) %></p>
-      </div>
-    </div>
-
-    <!-- Partner's Perspective -->
-    <div class="col-md-6">
-      <div class="glass-card-static p-4 h-100">
-        <h5 class="fw-bold mb-3"><i class="bi bi-person-fill me-2" style="color: #FF6B9D;"></i><%= @conflict_session.partner_name %>'s Perspective</h5>
-        <% if @conflict_session.partner_perspective.present? %>
-          <p><%= simple_format(@conflict_session.partner_perspective) %></p>
-        <% else %>
-          <%= form_with(model: @conflict_session, method: :patch) do |f| %>
-            <%= f.text_area :partner_perspective, class: 'form-control mb-3', rows: 5, placeholder: "Enter your partner's perspective..." %>
-            <%= f.submit 'Save Perspective', class: 'btn btn-gradient btn-sm' %>
-          <% end %>
-        <% end %>
-      </div>
-    </div>
-  </div>
-
-  <!-- Uploaded Chat Screenshots -->
-  <% if @conflict_session.chat_screenshots.attached? %>
-    <div class="glass-card-static p-4 mt-4">
-      <h5 class="fw-bold mb-3"><i class="bi bi-chat-dots-fill me-2" style="color: #6C63FF;"></i>Chat Screenshots</h5>
-      <div class="d-flex flex-wrap gap-3">
-        <% @conflict_session.chat_screenshots.each do |screenshot| %>
-          <div style="border: 2px solid rgba(108, 99, 255, 0.3); border-radius: 8px; overflow: hidden;">
-            <%= image_tag(screenshot, style: 'max-width: 200px; max-height: 300px; object-fit: contain;') %>
-          </div>
-        <% end %>
-      </div>
-      <div class="form-text mt-2" style="color: #aaa;">These screenshots will be analyzed by AI along with the written perspectives.</div>
-    </div>
-  <% end %>
-
-  <!-- AI Analysis -->
-  <% if @conflict_session.completed? %>
-    <div class="glass-card-static p-4 mt-4" style="border-color: rgba(46, 204, 113, 0.3);">
-      <h5 class="fw-bold mb-3"><i class="bi bi-robot me-2" style="color: #2ECC71;"></i>AI Analysis</h5>
-      <div class="mb-4">
-        <%= simple_format(@conflict_session.ai_analysis) %>
-      </div>
-      <div class="glass-card p-3" style="background: rgba(46, 204, 113, 0.08); border-color: rgba(46, 204, 113, 0.2);">
-        <h6 class="fw-bold" style="color: #2ECC71;"><i class="bi bi-lightbulb-fill me-1"></i> Summary</h6>
-        <p class="mb-0"><%= @conflict_session.ai_summary %></p>
-      </div>
-
-      <div class="mt-4 text-center">
+<div class="container py-4" style="max-width: 900px;">
+  <div class="d-flex justify-content-between align-items-center mb-4 animate-fade-in">
+    <%= link_to conflict_sessions_path, class: 'btn btn-outline-glass d-inline-flex align-items-center' do %>
+      <i class="bi bi-arrow-left me-2"></i> Back to Conflicts
+    <% end %>
+    
+    <% if @conflict_session.completed? && (@conflict_session.ai_summary.blank? || @conflict_session.ai_analysis.blank?) %>
+      <div class="d-flex gap-2">
         <%= form_tag(analyze_conflict_session_path(@conflict_session), method: :post, data: { turbo: false }) do %>
-          <button type="submit" class="btn btn-outline-success btn-sm">
-            <i class="bi bi-arrow-clockwise me-1"></i> Retry Analysis
+          <button type="submit" class="btn btn-outline-glass">
+            <i class="bi bi-arrow-clockwise me-1"></i> Re-Analyze
           </button>
         <% end %>
       </div>
+    <% end %>
+  </div>
+
+  <div class="report-container">
+    <!-- Header Section -->
+    <div class="report-section page-header text-center mb-5">
+      <div class="badge-glass mb-3 px-3 py-2 animate-fade-in">
+        <i class="bi bi-shield-shaded me-2"></i>Conflict Mediation Session
+      </div>
+      <h1 class="display-5 fw-800 mb-2">
+        Topic: <span class="gradient-text"><%= @conflict_session.topic %></span>
+      </h1>
+      <p class="text-muted">Mediation with <%= @conflict_session.partner_name %> • <%= @conflict_session.created_at.strftime('%B %d, %Y') %></p>
     </div>
-  <% elsif @conflict_session.partner_perspective.present? || @conflict_session.chat_screenshots.attached? %>
-    <div class="text-center mt-4">
-      <%= form_tag(analyze_conflict_session_path(@conflict_session), method: :post, data: { turbo: false }) do %>
-        <button type="submit" class="btn btn-gradient btn-lg">
-          <span><i class="bi bi-magic me-1"></i> Generate AI Analysis</span>
-        </button>
-      <% end %>
+
+    <!-- Perspectives Section -->
+    <div class="report-section mb-5">
+      <div class="row g-4">
+        <div class="col-md-6">
+          <div class="glass-card-static p-4 h-100 border-start border-primary border-4">
+            <div class="d-flex align-items-center mb-3">
+              <div class="feature-icon m-0 me-3" style="width: 40px; height: 40px; font-size: 1rem;">
+                <i class="bi bi-person-fill text-primary"></i>
+              </div>
+              <h5 class="fw-bold mb-0"><%= current_user.first_name %>'s Perspective</h5>
+            </div>
+            <div class="perspective-text" style="line-height: 1.6; color: #E4E4F0;">
+              <%= simple_format(@conflict_session.user_perspective) %>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-md-6">
+          <div class="glass-card-static p-4 h-100 border-start border-secondary border-4">
+            <div class="d-flex align-items-center mb-3">
+              <div class="feature-icon m-0 me-3" style="width: 40px; height: 40px; font-size: 1rem;">
+                <i class="bi bi-person-heart text-secondary"></i>
+              </div>
+              <h5 class="fw-bold mb-0"><%= @conflict_session.partner_name %>'s Perspective</h5>
+            </div>
+            <% if @conflict_session.partner_perspective.present? %>
+              <div class="perspective-text" style="line-height: 1.6; color: #E4E4F0;">
+                <%= simple_format(@conflict_session.partner_perspective) %>
+              </div>
+            <% else %>
+              <div class="text-center py-3">
+                <p class="text-muted small mb-3">Your partner's perspective is missing. You can add it now for a more balanced AI analysis.</p>
+                <%= form_with(model: @conflict_session, method: :patch) do |f| %>
+                  <%= f.text_area :partner_perspective, class: 'form-control mb-3', rows: 4, placeholder: "Describe how #{@conflict_session.partner_name} sees this situation..." %>
+                  <%= f.submit 'Save Partner Perspective', class: 'btn btn-gradient btn-sm w-100' %>
+                <% end %>
+              </div>
+            <% end %>
+          </div>
+        </div>
+      </div>
     </div>
-  <% end %>
+
+    <!-- Uploaded Evidence Section -->
+    <% if @conflict_session.chat_screenshots.attached? %>
+      <div class="report-section mb-5">
+        <div class="glass-card-static p-4">
+          <h5 class="fw-bold mb-4 d-flex align-items-center">
+            <i class="bi bi-chat-square-quote-fill me-2 text-primary"></i> 
+            Attached Chat Context
+          </h5>
+          <div class="row g-3">
+            <% @conflict_session.chat_screenshots.each do |screenshot| %>
+              <div class="col-6 col-sm-4 col-md-3">
+                <a href="<%= rails_blob_path(screenshot) %>" target="_blank" class="d-block screenshot-thumbnail">
+                  <%= image_tag screenshot, class: 'img-fluid rounded border border-secondary border-opacity-25', style: 'height: 150px; width: 100%; object-fit: cover;' %>
+                  <div class="screenshot-overlay">
+                    <i class="bi bi-zoom-in"></i>
+                  </div>
+                </a>
+              </div>
+            <% end %>
+          </div>
+          <p class="small text-muted mt-3 mb-0">
+            <i class="bi bi-info-circle me-1"></i> These screenshots provide tone and communication context for the AI analysis.
+          </p>
+        </div>
+      </div>
+    <% end %>
+
+    <!-- AI Mediation Results -->
+    <% if @conflict_session.completed? %>
+      <div class="report-section mb-5">
+        <!-- Summary Highlight -->
+        <div class="glass-card p-4 mb-4 border-success border-opacity-25" style="background: linear-gradient(135deg, rgba(46, 204, 113, 0.1), rgba(108, 99, 255, 0.05));">
+          <div class="d-flex align-items-start gap-3">
+            <div class="feature-icon m-0 bg-success bg-opacity-20 text-success" style="width: 50px; height: 50px; min-width: 50px;">
+              <i class="bi bi-lightbulb-fill"></i>
+            </div>
+            <div>
+              <h5 class="fw-bold text-success mb-2">Mediator's Summary</h5>
+              <p class="mb-0 fs-5" style="color: #F0F0FA; line-height: 1.5; font-weight: 500;">
+                <%= @conflict_session.ai_summary %>
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Full Analysis -->
+        <div class="glass-card-static p-4 p-md-5">
+          <div class="d-flex align-items-center gap-3 mb-4 pb-3 border-bottom border-secondary border-opacity-25">
+            <div class="feature-icon m-0" style="width: 50px; height: 50px;">
+              <i class="bi bi-robot gradient-text"></i>
+            </div>
+            <div>
+              <h4 class="fw-bold mb-0">Deep Analysis Report</h4>
+              <p class="text-muted small mb-0">Unbiased evaluation of both perspectives</p>
+            </div>
+          </div>
+          
+          <div class="report-content mediation-report">
+            <%= format_ai_response(@conflict_session.ai_analysis) %>
+          </div>
+        </div>
+      </div>
+    <% elsif @conflict_session.partner_perspective.present? || @conflict_session.chat_screenshots.attached? %>
+      <div class="report-section text-center py-5 animate-pulse-glow rounded-4" style="background: rgba(108, 99, 255, 0.05); border: 2px dashed rgba(108, 99, 255, 0.2);">
+        <div class="mb-4">
+          <i class="bi bi-magic display-4 gradient-text"></i>
+        </div>
+        <h3 class="fw-bold">Ready for AI Mediation</h3>
+        <p class="text-muted mb-4 mx-auto" style="max-width: 500px;">Our AI is ready to analyze both perspectives and provide an unbiased resolution strategy.</p>
+        <%= form_tag(analyze_conflict_session_path(@conflict_session), method: :post, data: { turbo: false }) do %>
+          <button type="submit" class="btn btn-gradient btn-lg px-5">
+            <span>Generate Analysis Now</span>
+          </button>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="report-section text-center py-5">
+        <div class="glass-card p-5">
+          <i class="bi bi-info-circle display-4 text-muted mb-3"></i>
+          <h4 class="fw-bold">More Context Needed</h4>
+          <p class="text-muted">Please provide your partner's perspective or upload chat screenshots to enable AI mediation.</p>
+        </div>
+      </div>
+    <% end %>
+  </div>
 </div>
+
+<style>
+  .screenshot-thumbnail {
+    position: relative;
+    transition: transform 0.2s ease;
+  }
+  .screenshot-thumbnail:hover {
+    transform: scale(1.05);
+  }
+  .screenshot-overlay {
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(108, 99, 255, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.2s ease;
+    color: white;
+    font-size: 1.5rem;
+    border-radius: 0.5rem;
+  }
+  .screenshot-thumbnail:hover .screenshot-overlay {
+    opacity: 1;
+  }
+
+  .mediation-section {
+    padding: 1.5rem;
+    border-radius: 1rem;
+    margin-bottom: 2rem;
+  }
+  .common-ground {
+    background: rgba(46, 204, 113, 0.08);
+    border: 1px solid rgba(46, 204, 113, 0.2);
+    h5 { color: #2ECC71; }
+  }
+  .recommendations {
+    background: rgba(108, 99, 255, 0.08);
+    border: 1px solid rgba(108, 99, 255, 0.2);
+    h5 { color: #6C63FF; }
+  }
+
+
+</style>
