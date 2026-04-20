@@ -19,6 +19,72 @@ class DashboardController < ApplicationController
     @recent_memories = current_user.memories.recent.limit(5)
     @active_programs = current_user.user_programs.where(status: [:enrolled, :in_progress]).includes(:program).limit(3)
 
+    # Aggregate Recent Activity
+    @recent_activities = []
+
+    # 1. Conversations (Web, Telegram, WhatsApp)
+    current_user.conversations.order(updated_at: :desc).limit(5).each do |c|
+      @recent_activities << {
+        type: :conversation,
+        title: c.title,
+        icon: c.persona_icon,
+        time: c.updated_at,
+        url: conversation_path(c),
+        badge: c.platform.humanize
+      }
+    end
+
+    # 2. Conflict Sessions
+    current_user.conflict_sessions.order(updated_at: :desc).limit(3).each do |s|
+      @recent_activities << {
+        type: :conflict,
+        title: "Conflict: #{s.topic}",
+        icon: "⚖️",
+        time: s.updated_at,
+        url: conflict_session_path(s),
+        badge: "Conflict"
+      }
+    end
+
+    # 3. Health Metrics
+    current_user.health_metrics.order(created_at: :desc).limit(3).each do |h|
+      @recent_activities << {
+        type: :health,
+        title: "Relationship Health Check",
+        icon: "📊",
+        time: h.created_at,
+        url: health_path,
+        badge: "Score: #{h.score}/10"
+      }
+    end
+
+    # 4. Memories
+    current_user.memories.order(created_at: :desc).limit(3).each do |m|
+      @recent_activities << {
+        type: :memory,
+        title: "Memory: #{m.title}",
+        icon: m.memory_icon.presence || "💖",
+        time: m.created_at,
+        url: memories_path,
+        badge: "Memory"
+      }
+    end
+
+    # 5. Compatibility Assessments
+    current_user.compatibility_assessments.order(updated_at: :desc).limit(3).each do |ca|
+      @recent_activities << {
+        type: :compatibility,
+        title: "Compatibility with #{ca.partner_name}",
+        icon: "💕",
+        time: ca.updated_at,
+        url: compatibility_assessment_path(ca),
+        badge: "Assessment"
+      }
+    end
+
+    # Sort and take top 10
+    @recent_activities = @recent_activities.sort_by { |a| a[:time] }.reverse.take(10)
+
     # Dashboard stats
     @total_conversations = current_user.conversations.count
     @total_sessions = current_user.bookings.completed.count

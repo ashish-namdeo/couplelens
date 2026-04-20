@@ -54,31 +54,50 @@
         </div>
       </div>
 
-      <!-- Recent Conversations -->
+      <!-- Recent Activity -->
       <div class="glass-card-static p-4 mb-4">
         <div class="d-flex justify-content-between align-items-center mb-3">
-          <h5 class="fw-bold mb-0"><i class="bi bi-chat-dots-fill me-2" style="color: #6C63FF;"></i>Recent Conversations</h5>
-          <%= link_to 'View All', conversations_path, class: 'btn btn-sm btn-outline-glass' %>
+          <h5 class="fw-bold mb-0"><i class="bi bi-activity me-2" style="color: #6C63FF;"></i>Recent Activity</h5>
         </div>
-        <% if @recent_conversations.any? %>
-          <% @recent_conversations.each do |conv| %>
-            <%= link_to conv, class: 'glass-card p-3 mb-2 d-block text-decoration-none' do %>
-              <div class="d-flex align-items-center justify-content-between">
-                <div>
-                  <span class="me-2"><%= conv.persona_icon %></span>
-                  <span class="fw-bold"><%= conv.title %></span>
-                  <span class="badge-glass ms-2"><%= conv.persona_display_name %></span>
+        
+        <div class="recent-activity-scroll" style="max-height: 480px; overflow-y: auto; padding-right: 8px;">
+          <% if @recent_activities.any? %>
+            <% @recent_activities.each do |activity| %>
+              <%= link_to activity[:url], class: 'glass-card p-3 mb-2 d-block text-decoration-none' do %>
+                <div class="d-flex align-items-center justify-content-between">
+                  <div>
+                    <span class="me-2" style="font-size: 1.2rem;"><%= activity[:icon] %></span>
+                    <span class="fw-bold"><%= activity[:title] %></span>
+                    <span class="badge-glass ms-2"><%= activity[:badge] %></span>
+                  </div>
+                  <small class="text-muted"><%= time_ago_in_words(activity[:time]) %> ago</small>
                 </div>
-                <small class="text-muted"><%= time_ago_in_words(conv.updated_at) %> ago</small>
-              </div>
+              <% end %>
             <% end %>
+          <% else %>
+            <div class="empty-state py-3">
+              <p class="text-muted">No activity yet. Start by talking to your AI advisor!</p>
+            </div>
           <% end %>
-        <% else %>
-          <div class="empty-state py-3">
-            <p class="text-muted">No conversations yet. Start your first AI chat!</p>
-          </div>
-        <% end %>
+        </div>
       </div>
+
+      <style>
+        .recent-activity-scroll::-webkit-scrollbar {
+          width: 6px;
+        }
+        .recent-activity-scroll::-webkit-scrollbar-track {
+          background: rgba(255, 255, 255, 0.05);
+          border-radius: 10px;
+        }
+        .recent-activity-scroll::-webkit-scrollbar-thumb {
+          background: rgba(108, 99, 255, 0.3);
+          border-radius: 10px;
+        }
+        .recent-activity-scroll::-webkit-scrollbar-thumb:hover {
+          background: rgba(108, 99, 255, 0.5);
+        }
+      </style>
 
       <!-- Telegram & WhatsApp Conversations Hidden -->
       <% if false # FOR NOW: Hidden per user request %>
