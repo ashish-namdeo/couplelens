@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2026_04_13_135339) do
+ActiveRecord::Schema[7.0].define(version: 2026_04_14_120000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -102,8 +102,8 @@ ActiveRecord::Schema[7.0].define(version: 2026_04_13_135339) do
     t.string "language"
     t.string "platform", default: "web"
     t.string "slug"
-    t.index ["slug"], name: "index_conversations_on_slug", unique: true
     t.index ["platform"], name: "index_conversations_on_platform"
+    t.index ["slug"], name: "index_conversations_on_slug", unique: true
     t.index ["user_id"], name: "index_conversations_on_user_id"
   end
 
