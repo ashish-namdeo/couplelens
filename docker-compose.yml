@@ -1,0 +1,32 @@
+services:
+  db:
+    image: postgres:14
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: couple_lens_development
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d couple_lens_development"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  web:
+    build: .
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      RAILS_ENV: development
+      DATABASE_URL: postgres://postgres:postgres@db:5432/couple_lens_development
+      SECRET_KEY_BASE: ${SECRET_KEY_BASE:-dev_secret_key_base}
+    ports:
+      - "3000:3000"
+    command: bash -lc "bundle exec rails db:prepare && bundle exec rails server -b 0.0.0.0 -p 3000"
+    volumes:
+      - .:/app
+
+volumes:
+  postgres_data:
